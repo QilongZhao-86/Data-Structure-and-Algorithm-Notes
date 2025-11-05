@@ -229,3 +229,6 @@ Union(x, y)：
 合并 x 和 y 所在的两个集合，使它们成为同一个集合。
 
 Find 是“查关系”，Union 是“连起来”。
+
+word tips ： **annulus**-**环图**
+
