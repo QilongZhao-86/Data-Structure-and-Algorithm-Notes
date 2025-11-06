@@ -231,4 +231,6 @@ Union(x, y)：
 Find 是“查关系”，Union 是“连起来”。
 
 word tips ： **annulus**-**环图**
+Dijkstra 算法 与prim（最小生成树）的核心思想一致，每次找距离源点的路径最短的点，每次进行更新。
+![alt text](image-4.png)
 
