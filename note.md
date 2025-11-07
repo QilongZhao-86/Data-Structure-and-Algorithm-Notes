@@ -264,3 +264,17 @@ Dijkstra 算法的步骤可以简要概括为：
 每次找入度为0的点，删掉这个点以及它的出边
 
 
+### AOE网络和关键路径 ###
+
+AOE activity on edge  
+关键路径-整个工程中耗时最长的路径  
+关键活动-不能拖延的活动-最早开始时间=最晚开始时间 
+![alt text](image-5.png) 
+![alt text](image-6.png)
+![alt text](image-7.png)
+关键活动：e=l   
+关键路径：最耗时的   
+求ve：拓扑，ve用最大的数值   
+求vl：逆拓扑，vl用最小的数值   
+求e：由谁发出用谁的ve   
+求l：指向谁，用谁的vl减去用时   
