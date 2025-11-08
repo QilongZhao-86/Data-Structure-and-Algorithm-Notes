@@ -1,6 +1,5 @@
-当然，这里是完整可直接复制的 **Git + GitHub 多设备工作命令合集（Markdown 格式）**。
-你可以直接复制保存为 `git_workflow.md` 或粘贴到笔记软件、GitHub README 中使用。
 
+SSH -GIT to github  
 ---
 
 ````markdown
