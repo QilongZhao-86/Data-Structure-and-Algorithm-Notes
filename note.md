@@ -74,17 +74,17 @@ binary-relation list
 example: {(1, 2), (1, 4), (3, 5), (4, 2), (4, 5), (5, 2), (5, 3), (5, 8), (6, 9), (7, 9), (8, 4)}  
 Adjacency Matrix  有向图的纵坐标是出，横坐标是入；
 example:   
-![alt text](image.png)  
+![alt text](pic/image.png)  
 if for a weight graph（边上带权）  
-![alt text](image-1.png)  
+![alt text](pic/image-1.png)  
 表示邻接矩阵需要n^2个字节的存储空间。对于无向图，可以只存储矩阵的下三角或上三角部分（不包括对角线）  
 在邻接矩阵中，求某个顶点的度数或找出与该顶点相邻的顶点，所需时间复杂度为 O(n)。  
 
 邻接表结构：
 
-![alt text](image-2.png)
+![alt text](pic/image-2.png)
 **space = a*V + b*E**
-![alt text](image-3.png)
+![alt text](pic/image-3.png)
 **space = a*V + 2*b*E**  
 a是数组占用，b是链表占用  
 
@@ -247,7 +247,7 @@ Dijkstra 算法的步骤可以简要概括为：
 
 下面这两个算法不能适用于权值为负的情况  
 #### Dijkstra 算法 与prim（最小生成树）的核心思想一致，每次找距离源点的路径最短的点，每次进行更新。
-![alt text](image-4.png)
+![alt text](pic/image-4.png)
 时间复杂度  
 朴素实现（邻接矩阵 + 线性查找最小距离）：𝑂(𝑛^2)  
 使用最小堆（优先队列）+ 邻接表优化（常见于稀疏图）：O((n+m)logn)，其中 n 为顶点数，m 为边数。  
@@ -269,9 +269,9 @@ Dijkstra 算法的步骤可以简要概括为：
 AOE activity on edge  
 关键路径-整个工程中耗时最长的路径  
 关键活动-不能拖延的活动-最早开始时间=最晚开始时间 
-![alt text](image-5.png) 
-![alt text](image-6.png)
-![alt text](image-7.png)
+![alt text](pic/image-5.png) 
+![alt text](pic/image-6.png)
+![alt text](pic/image-7.png)
 关键活动：e=l   
 关键路径：最耗时的   
 求ve：拓扑，ve用最大的数值   
@@ -335,7 +335,7 @@ T(n) = O(\log_2 n)
 $$
 ----
 **block search** **分块查找**
-![alt text](image-9.png)
+![alt text](pic/image-9.png)
 
 #### 分块查找的平均查找长度（ASL）
 
@@ -412,7 +412,7 @@ $$
 * 每层最多比较 2 次关键字；
 * 总比较次数上界约为$$2 \log_2 n$$
 * 平均复杂度为$$O(\log n)$$
-![alt text](image-10.png)
+![alt text](pic/image-10.png)
 删除规则：
 1. **叶节点直接删除**：如果删除后叶节点仍有至少一个键，就不需任何修复，操作到此结束。
 
