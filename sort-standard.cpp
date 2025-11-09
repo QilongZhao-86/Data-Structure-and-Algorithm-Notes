@@ -158,7 +158,76 @@ void MergeSort()
 {
 
 }
-int main()
-{
+// 简单打印函数
+void PrintArray(const vector<int>& arr) {
+    for (int x : arr) cout << x << " ";
+    cout << "\n";
+}
 
+// 使用最原始的 rand() 实现 Fisher-Yates shuffle，seed 可写死或用 time(NULL)
+void PrimitiveShuffle(vector<int>& a) {
+    // 你可以在 main 中用 srand(1) 固定种子或 use time(NULL) 随机化
+    int n = a.size();
+    for (int i = n - 1; i > 0; --i) {
+        int j = rand() % (i + 1);
+        swap(a[i], a[j]);
+    }
+}
+
+// test_sort 函数：生成数据并按要求调用排序
+void test_sort() {
+    // 若希望每次结果相同（"写死"），请在 main 里用固定 seed：srand(1)
+    // 若希望随机不同，可用 srand(time(NULL))
+    // 这里不在函数里调用 srand，以便由主函数决定 seed 行为
+
+    // 构建 10x10 数据：每行为区间 [1..10], [11..20], ... [91..100] 的随机排列
+    vector<vector<int>> data(10, vector<int>(10));
+    for (int i = 0; i < 10; ++i) {
+        // 初始化有序区间
+        for (int j = 0; j < 10; ++j) {
+            data[i][j] = i * 10 + (j + 1); // i=0 -> 1..10, i=1 -> 11..20, ...
+        }
+        // 原始打乱（使用 PrimitiveShuffle）
+        PrimitiveShuffle(data[i]);
+    }
+
+    cout << "原始数据（10 行，每行一个区间的随机排列）：\n";
+    for (int i = 0; i < 10; ++i) {
+        cout << "Row " << i << ": ";
+        PrintArray(data[i]);
+    }
+
+    // 函数指针数组与名字（顺序对应每行使用的排序算法）
+    vector<void(*)(vector<int>&)> sortFuncs = {
+        BubbleSort, SelectionSort, InsertionSort, ShellSort,
+        MergeSort, QuickSort, HeapSort, CountingSort,
+        BucketSort, RadixSort
+    };
+
+    vector<string> sortNames = {
+        "BubbleSort", "SelectionSort", "InsertionSort", "ShellSort",
+        "MergeSort", "QuickSort", "HeapSort", "CountingSort",
+        "BucketSort", "RadixSort"
+    };
+
+    cout << "\n按行分别使用 10 种排序算法排序（每行使用一种）：\n";
+    for (int i = 0; i < 10; ++i) {
+        vector<int> arr = data[i]; // 复制原始行数据，避免改变原始矩阵
+        cout << "\nRow " << i << " 使用算法: " << sortNames[i] << "\n";
+        sortFuncs[i](arr); // 调用对应的排序函数（需你实现）
+        cout << "Result: ";
+        PrintArray(arr);
+    }
+}
+
+// main：设置种子并调用 test_sort
+int main() {
+    // 若希望“写死”（每次一样），用固定 seed
+    srand(1);
+
+    // 若希望每次不同，使用下面一行替代
+    // srand((unsigned)time(NULL));
+
+    test_sort();
+    return 0;
 }
