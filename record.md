@@ -208,14 +208,15 @@ public:
 
 ### 1.10 拓展题型建议
 
-| 题目方向            | 示例           |
-| :-------------- | :----------- |
-| 最短子数组和 ≥ target | LeetCode 209 |
-| 含K个不同字符的最长子串    | LeetCode 340 |
-| 无重复字符的最长子串      | LeetCode 3   |
-| 最小覆盖子串          | LeetCode 76  |
-| 固定窗口最大/最小值      | LeetCode 239 |
+| 题目方向                | 示例 |
+| :---------------------- | :--: |
+| 最短子数组和 ≥ target   | [LeetCode 209 · Minimum Size Subarray Sum](https://leetcode.cn/problems/minimum-size-subarray-sum/) |
+| 含 K 个不同字符的最长子串 | [LeetCode 340 · Longest Substring with At Most K Distinct Characters](https://leetcode.cn/problems/longest-substring-with-at-most-k-distinct-characters/) |
+| 无重复字符的最长子串     | [LeetCode 3 · Longest Substring Without Repeating Characters](https://leetcode.cn/problems/longest-substring-without-repeating-characters/) |
+| 最小覆盖子串             | [LeetCode 76 · Minimum Window Substring](https://leetcode.cn/problems/minimum-window-substring/) |
+| 固定窗口最大/最小值       | [LeetCode 239 · Sliding Window Maximum](https://leetcode.cn/problems/sliding-window-maximum/) |
 ---
+
 
 ## 2. 递归（Recursion）
 
@@ -405,15 +406,15 @@ public:
 
 ---
 
-### 2.4 递归的常见应用方向（预留）
+### 2.4 递归的常见应用方向
 
-| 模块       | 示例题目                  | 说明       |
-| -------- | --------------------- | -------- |
-| **链表**   | 203. 移除链表元素、206. 反转链表 | 操作天然递归结构 |
-| **树结构**  | 二叉树遍历、求最大深度           | 天生递归定义   |
-| **分治法**  | 快速排序、归并排序             | 拆分子区间    |
-| **回溯法**  | 全排列、组合总和              | 枚举搜索空间   |
-| **数学递推** | 斐波那契数列、汉诺塔问题          | 自然数学定义   |
+| 模块       | 示例题目                                                                 | 说明         |
+| -------- | -------------------------------------------------------------------- | ------------ |
+| **链表**   | [LeetCode 203 · 移除链表元素](https://leetcode.cn/problems/remove-linked-list-elements/)、[LeetCode 206 · 反转链表](https://leetcode.cn/problems/reverse-linked-list/) | 操作天然递归结构 |
+| **树结构**  | [LeetCode 104 · 二叉树的最大深度](https://leetcode.cn/problems/maximum-depth-of-binary-tree/)、[LeetCode 94 · 二叉树的中序遍历](https://leetcode.cn/problems/binary-tree-inorder-traversal/) | 天生递归定义   |
+| **分治法**  | [LeetCode 912 · 排序数组](https://leetcode.cn/problems/sort-an-array/)（归并/快排） | 拆分子区间    |
+| **回溯法**  | [LeetCode 46 · 全排列](https://leetcode.cn/problems/permutations/)、[LeetCode 39 · 组合总和](https://leetcode.cn/problems/combination-sum/) | 枚举搜索空间   |
+| **数学递推** | [LeetCode 509 · 斐波那契数](https://leetcode.cn/problems/fibonacci-number/)、[LeetCode 70 · 爬楼梯](https://leetcode.cn/problems/climbing-stairs/) | 自然数学定义   |
 
 ---
 
