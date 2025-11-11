@@ -426,3 +426,157 @@ public:
 这是算法思维中最接近“自我复制逻辑”的一环——一种逻辑上的递归优雅。
 
 ---
+## 3. 单链表核心函数详解
+
+> 以下内容基于官方题解代码（参考 [LeetCode 707 - 设计链表](https://leetcode.cn/problems/design-linked-list/)）。  
+
+---
+
+### 3.1 构造函数 `MyLinkedList()`
+
+```cpp
+MyLinkedList() {
+    this->size = 0;
+    this->head = new ListNode(0); // 创建哨兵节点
+}
+```
+
+#### 功能解析：
+
+初始化链表。
+
+* `size` 记录当前节点数量；
+* `head` 指向哨兵节点（dummy head），避免空链表时插入/删除逻辑的特殊判断。
+> ![链表初始化示意图](pic/1_1.png)
+
+---
+
+### 3.2 获取节点 `get(int index)`
+
+```cpp
+int get(int index) {
+    if (index < 0 || index >= size) {
+        return -1;
+    }
+    ListNode *cur = head;
+    for (int i = 0; i <= index; i++) {
+        cur = cur->next;
+    }
+    return cur->val;
+}
+```
+
+#### 功能解析：
+
+线性遍历链表，获取第 `index` 个节点的值。
+由于链表没有随机访问能力，必须从头节点开始移动指针。
+
+#### 时间复杂度：
+
+O(n)
+
+> ![get函数遍历示意图](pic/1_2.png)
+
+---
+
+### 3.3 头插法 `addAtHead(int val)`
+
+```cpp
+void addAtHead(int val) {
+    addAtIndex(0, val);
+}
+```
+
+#### 功能解析：
+在链表头部（哨兵节点后）插入新节点。
+本质上是调用 `addAtIndex(0, val)`。
+
+
+### 3.4 尾插法 `addAtTail(int val)`
+
+```cpp
+void addAtTail(int val) {
+    addAtIndex(size, val);
+}
+```
+#### 功能解析：
+
+在链表尾部插入节点。
+由于没有 `tail` 指针，需要从头遍历至尾。
+
+---
+
+### 3.5 指定位置插入 `addAtIndex(int index, int val)`
+
+```cpp
+void addAtIndex(int index, int val) {
+    if (index > size) {
+        return;
+    }
+    index = max(0, index);
+    size++;
+    ListNode *pred = head;
+    for (int i = 0; i < index; i++) {
+        pred = pred->next;
+    }
+    ListNode *toAdd = new ListNode(val);
+    toAdd->next = pred->next;
+    pred->next = toAdd;
+}
+```
+
+#### 功能解析：
+
+1. 检查插入位置是否合法；
+2. 遍历到插入点的**前驱节点**；
+3. 执行指针交换，实现插入；
+4. 更新链表长度。
+
+#### 关键点：
+
+* 插入到 `index == size` 时等价于尾插；
+* 插入到 `index == 0` 时等价于头插；
+* 用 `pred` 记录前驱节点，确保操作安全。
+> ![addAtIndex插入指针调整图](pic/1_3.png)
+
+---
+
+### 3.6 删除节点 `deleteAtIndex(int index)`
+
+```cpp
+void deleteAtIndex(int index) {
+    if (index < 0 || index >= size) {
+        return;
+    }
+    size--;
+    ListNode *pred = head;
+    for (int i = 0; i < index; i++) {
+        pred = pred->next;
+    }
+    ListNode *p = pred->next;
+    pred->next = pred->next->next;
+    delete p;
+}
+```
+
+#### 功能解析：
+
+1. 检查删除位置是否合法；
+2. 遍历到被删节点的前驱；
+3. 调整指针，使目标节点被“跳过”；
+4. 释放内存。
+
+#### 关键点：
+
+* 若删除第一个节点，`pred` 即为哨兵节点；
+* `delete p;` 防止内存泄漏。
+> ![deleteAtIndex删除节点示意图](pic/1_4.png)
+
+---
+
+### 3.7 小结
+
+链表的核心操作本质都是对“指针指向”的精确控制。
+理解“前驱节点（pred）”与“当前节点（cur）”的关系，是编写无 bug 链表代码的关键。
+在链表操作中，**一行指针交换代码往往是逻辑核心**。
+
