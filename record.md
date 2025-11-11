@@ -216,3 +216,213 @@ public:
 | 最小覆盖子串          | LeetCode 76  |
 | 固定窗口最大/最小值      | LeetCode 239 |
 ---
+
+## 2. 递归（Recursion）
+
+### 2.1 核心思想  
+
+**递归（Recursion）** 是一种“让函数调用自身”的算法思想，用于解决可以分解为相似子问题的任务。  
+递归包含三个关键步骤：  
+
+1. **终止条件（Base Case）**：当问题足够小，可以直接返回结果。  
+2. **递归调用（Recurrence）**：将大问题分解为更小的子问题。  
+3. **结果合并（Return / Combine）**：将子问题结果向上传递。
+
+链表是天然适合递归的结构，因为每个节点都指向下一个节点，整个链表就像一个“从头到尾的嵌套结构”。  
+因此，许多链表题（如删除节点、反转链表、合并链表）都能用递归 elegantly 地实现。
+
+---
+
+### 2.2 移除链表元素（Remove Linked List Elements）
+
+题号：LeetCode 203  
+题意：删除链表中所有值等于 `val` 的节点，并返回新的头节点。
+
+---
+
+#### 2.2.1 递归法  
+
+**思路分析：**  
+- 对除头节点外的部分递归删除目标节点；
+- 回溯时根据当前节点的值决定是否保留；
+- 空链表为递归终止条件。
+
+**关键逻辑：**
+```cpp
+head->next = removeElements(head->next, val);
+return head->val == val ? head->next : head;
+```
+
+**代码实现：**
+
+```cpp
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        if (head == nullptr)
+            return head;                        // 递归终止条件
+        head->next = removeElements(head->next, val); // 递归处理子链表
+        return head->val == val ? head->next : head;  // 回溯阶段决定是否删除当前节点
+    }
+};
+```
+
+**复杂度分析：**
+
+* 时间复杂度：O(n)
+* 空间复杂度：O(n)（递归调用栈）
+
+---
+
+#### 2.2.2 迭代法（官方写法）
+
+**思路分析：**
+
+* 创建一个哑节点 `dummyHead` 连接原链表；
+* 使用指针 `temp` 遍历；
+* 若 `temp->next->val == val`，则跳过下一个节点；
+* 否则向后移动。
+
+**代码实现：**
+
+```cpp
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        ListNode* dummyHead = new ListNode(0, head);
+        ListNode* temp = dummyHead;
+        while (temp->next != nullptr) {
+            if (temp->next->val == val)
+                temp->next = temp->next->next;
+            else
+                temp = temp->next;
+        }
+        return dummyHead->next;
+    }
+};
+```
+
+**复杂度分析：**
+
+* 时间复杂度：O(n)
+* 空间复杂度：O(1)
+
+---
+
+#### 2.2.3 我的版本（手动跳过头节点法）
+
+**思路分析：**
+
+* 若头节点等于目标值，需要不断前移；
+* 之后用两个指针 `behind` 与 `temp` 维护链表；
+* 若中间节点值为 `val`，跳过它，否则两指针同时前移；
+* 最后处理尾节点是否删除。
+
+**代码实现：**
+
+```cpp
+class Solution {
+public:
+    ListNode* removeElements(ListNode* head, int val) {
+        if (head == nullptr)
+            return nullptr;
+
+        // 跳过前导等于 val 的节点
+        while (head->val == val) {
+            head = head->next;
+            if (head == nullptr)
+                return nullptr;
+        }
+
+        ListNode* temp = head->next;
+        ListNode* behind = head;
+        if (temp == nullptr)
+            return head;
+
+        // 删除中间节点
+        while (temp->next != nullptr) {
+            if (temp->val == val) {
+                temp = temp->next;
+                behind->next = temp;
+            } else {
+                temp = temp->next;
+                behind = behind->next;
+            }
+        }
+
+        // 处理最后一个节点
+        if (temp->val == val)
+            behind->next = nullptr;
+
+        return head;
+    }
+};
+```
+
+**复杂度分析：**
+
+* 时间复杂度：O(n)
+* 空间复杂度：O(1)
+
+---
+
+#### 2.2.4 三种写法比较
+
+| 对比维度    | 递归法    | 官方迭代法     | 我的实现    |
+| ------- | ------ | --------- | ------- |
+| 删除头节点方式 | 递归自然处理 | 使用哑节点简化   | 手动前移跳过  |
+| 删除逻辑实现  | 通过回溯判断 | 指针修改 next | 双指针跳过节点 |
+| 可读性     | 简洁优雅   | 清晰易维护     | 较繁琐但直观  |
+| 时间复杂度   | O(n)   | O(n)      | O(n)    |
+| 空间复杂度   | O(n)   | O(1)      | O(1)    |
+
+---
+
+#### 2.2.5 思维总结
+
+1. 递归的魅力在于：**你不需要同时考虑所有节点，只要相信“子问题已解决”**。
+2. 每一层递归仅需思考“当前节点是否保留”，这让复杂指针操作变得逻辑简单。
+3. 但递归也有局限——在极长链表中可能导致栈溢出，因此面试中常用迭代法。
+4. 理解这道题的递归思想，是进入链表高阶递归题（如反转、合并）的基础。
+
+---
+
+### 2.3 递归的通用模板
+
+```cpp
+返回类型 函数名(参数) {
+    // 1. 终止条件
+    if (终止条件)
+        return 基础结果;
+
+    // 2. 递归调用
+    子问题结果 = 函数名(子问题参数);
+
+    // 3. 合并结果
+    return 当前结果与子结果的组合;
+}
+```
+
+---
+
+### 2.4 递归的常见应用方向（预留）
+
+| 模块       | 示例题目                  | 说明       |
+| -------- | --------------------- | -------- |
+| **链表**   | 203. 移除链表元素、206. 反转链表 | 操作天然递归结构 |
+| **树结构**  | 二叉树遍历、求最大深度           | 天生递归定义   |
+| **分治法**  | 快速排序、归并排序             | 拆分子区间    |
+| **回溯法**  | 全排列、组合总和              | 枚举搜索空间   |
+| **数学递推** | 斐波那契数列、汉诺塔问题          | 自然数学定义   |
+
+---
+
+### 2.5 小结
+
+* **递归思想本质：** “用函数调用自身”以简化问题。
+* **链表递归精华：** 利用回溯阶段自然修改指针。
+* **学习建议：** 先从“移除链表元素”“反转链表”等入手，再扩展到二叉树递归。
+递归的魅力在于抽象思维：你不需要知道“下一步怎么走”，只需相信“子问题已经被解决”。
+这是算法思维中最接近“自我复制逻辑”的一环——一种逻辑上的递归优雅。
+
+---
