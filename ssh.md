@@ -1,11 +1,8 @@
 
-SSH -GIT to github  
+# missing semester·计算机教育中缺失的学期
 ---
 
-````markdown
-# 🚀 Git + GitHub 多设备工作命令合集
-
----
+# 🚀 Git + GitHub 使用教程
 
 ## 🧩 一、初次配置（每台设备只需一次）
 
@@ -16,7 +13,7 @@ git config --global user.email "你的邮箱@example.com"
 
 # 检查配置
 git config --list
-````
+```
 
 ### SSH 密钥配置（推荐）
 
@@ -243,12 +240,4 @@ git checkout main
 git pull --rebase origin main
 git branch -d feat/add-login
 ```
-
 ---
-
-```
-
----
-
-是否希望我帮你在这份 Markdown 里**额外加上命令执行示意图（例如分支流图、push/pull 流程图）**？那样放进你的笔记或 README 会更直观。
-```
