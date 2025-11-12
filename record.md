@@ -378,8 +378,21 @@ public:
 | 空间复杂度   | O(n)   | O(1)      | O(1)    |
 
 ---
-
-#### 2.2.5 思维总结
+### 2.2.5 递归例题2
+题号：[LeetCode 24 - Swap Nodes in Pairs](https://leetcode.cn/problems/swap-nodes-in-pairs/) 
+题意：两两交换链表中的节点，并返回交换后的头节点。
+```cpp
+ ListNode* swapPairs(ListNode* head) {
+        if(head==nullptr||head->next==nullptr)
+        return head;
+        ListNode* newnode=head->next;
+        head->next=swapPairs(newnode->next);
+        newnode->next=head;
+        return newnode;
+    }
+```
+这道题与其他递归不同的是他的递归处理后要进行节点交换操作，递归的核心思想依然是将大问题分解为小问题，先处理后面的节点，再回溯处理当前节点的交换。
+#### 2.2.6 思维总结
 
 1. 递归的魅力在于：**你不需要同时考虑所有节点，只要相信“子问题已解决”**。
 2. 每一层递归仅需思考“当前节点是否保留”，这让复杂指针操作变得逻辑简单。
@@ -429,7 +442,7 @@ public:
 ---
 ## 3. 单链表核心函数详解
 
-> 以下内容基于官方题解代码（参考 [LeetCode 707 - 设计链表](https://leetcode.cn/problems/design-linked-list/)）。  
+ 以下内容基于官方题解代码（参考 [LeetCode 707 - 设计链表](https://leetcode.cn/problems/design-linked-list/)）。  
 
 ---
 
@@ -582,3 +595,62 @@ void deleteAtIndex(int index) {
 在链表操作中，**一行指针交换代码往往是逻辑核心**。
 
 ---
+## 4.双指针在链表遍历中的作用
+参考 Leetcode19  [删除链表的倒数第 N 个节点（Remove Nth Node From End of List）](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
+
+### 思路与算法
+
+本题可以在 **不预处理链表长度** 且 **仅用常数空间** 的前提下完成。  
+核心思想是利用两个指针 `first` 和 `second`，让 `first` 领先 `second` **n 个节点**，这样当 `first` 到达链表末尾时，`second` 恰好处于倒数第 n 个节点的前一个位置。
+
+### 步骤说明
+
+1. **初始化**  
+   创建一个哑节点 `dummy`，令 `dummy->next = head`。  
+   这样即使删除的是头节点，也能统一处理。
+
+2. **设置指针间距**  
+   令两个指针 `first` 和 `second` 分别指向 `head` 和 `dummy`。  
+   先让 `first` 向前移动 `n` 次，使其领先 `second` **n 个节点**。
+
+3. **同步移动**  
+   然后同时移动 `first` 与 `second`，直到 `first` 到达链表末尾。  
+   此时，`second` 的下一个节点就是需要删除的节点。
+
+4. **执行删除操作**  
+   通过 `second->next = second->next->next` 完成节点的删除。
+
+5. **返回结果**  
+   返回 `dummy->next` 即为新的链表头节点。
+
+---
+
+## 代码实现（C++）
+
+```cpp
+class Solution {
+public:
+    ListNode* removeNthFromEnd(ListNode* head, int n) {
+        ListNode* dummy = new ListNode(0, head);
+        ListNode* first = head;
+        ListNode* second = dummy;
+        for (int i = 0; i < n; ++i) {
+            first = first->next;
+        }
+        while (first) {
+            first = first->next;
+            second = second->next;
+        }
+        second->next = second->next->next;
+        ListNode* ans = dummy->next;
+        delete dummy;
+        return ans;
+    }
+};
+```
+#### 复杂度分析
+时间复杂度：O(L)
+其中 L 是链表的长度，first 与 second 各自遍历一次链表。
+
+空间复杂度：O(1)
+仅使用了常数级的指针变量，无额外空间开销。
