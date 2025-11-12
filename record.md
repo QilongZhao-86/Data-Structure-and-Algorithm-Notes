@@ -595,37 +595,50 @@ void deleteAtIndex(int index) {
 在链表操作中，**一行指针交换代码往往是逻辑核心**。
 
 ---
-## 4.双指针在链表遍历中的作用
-参考 Leetcode19  [删除链表的倒数第 N 个节点（Remove Nth Node From End of List）](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
 
-### 思路与算法
+## 4. 双指针在链表遍历中的作用  
 
-本题可以在 **不预处理链表长度** 且 **仅用常数空间** 的前提下完成。  
-核心思想是利用两个指针 `first` 和 `second`，让 `first` 领先 `second` **n 个节点**，这样当 `first` 到达链表末尾时，`second` 恰好处于倒数第 n 个节点的前一个位置。
+双指针（Two Pointers）是链表题中极为常用的技巧。  
+它通过同时控制两个指针的位置或速度差，能够在一次遍历中完成需要多次操作的任务。  
+在链表问题中，双指针常用于**定位节点、检测环、找中点、删除倒数节点**等情形。  
+下面通过两道经典题目来理解双指针的两种典型应用：  
 
-### 步骤说明
-
-1. **初始化**  
-   创建一个哑节点 `dummy`，令 `dummy->next = head`。  
-   这样即使删除的是头节点，也能统一处理。
-
-2. **设置指针间距**  
-   令两个指针 `first` 和 `second` 分别指向 `head` 和 `dummy`。  
-   先让 `first` 向前移动 `n` 次，使其领先 `second` **n 个节点**。
-
-3. **同步移动**  
-   然后同时移动 `first` 与 `second`，直到 `first` 到达链表末尾。  
-   此时，`second` 的下一个节点就是需要删除的节点。
-
-4. **执行删除操作**  
-   通过 `second->next = second->next->next` 完成节点的删除。
-
-5. **返回结果**  
-   返回 `dummy->next` 即为新的链表头节点。
+- **Leetcode 19：删除链表的倒数第 N 个节点**  
+- **Leetcode 142：环形链表 II（检测环的入口）**
 
 ---
 
-## 代码实现（C++）
+### 4.1 删除链表的倒数第 N 个节点  
+参考：[Leetcode 19 - Remove Nth Node From End of List](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
+
+#### 思路与算法  
+
+在不预处理链表长度、且仅使用常数空间的前提下，我们可以用两个指针 `first` 和 `second`。  
+让 `first` 比 `second` **超前 n 个节点**，当 `first` 到达链表末尾时，`second` 就位于倒数第 n 个节点的前一个位置。  
+此时只需修改 `second->next` 即可完成删除。
+
+#### 步骤说明  
+
+1. **初始化**  
+   创建一个哑节点 `dummy`，令 `dummy->next = head`。  
+   这样即使删除的是头节点，也能统一处理逻辑。
+
+2. **建立间距**  
+   让 `first` 从 `head` 开始前进 `n` 次，使 `first` 比 `second` 提前 `n` 个节点。
+
+3. **同步前进**  
+   同时移动 `first` 和 `second`，直到 `first` 指向空。  
+   此时，`second->next` 即为需要删除的节点。
+
+4. **执行删除操作**  
+   执行 `second->next = second->next->next;` 完成删除。
+
+5. **返回结果**  
+   返回 `dummy->next` 即新的链表头节点。
+
+---
+
+#### 代码实现（C++）
 
 ```cpp
 class Solution {
@@ -648,9 +661,107 @@ public:
     }
 };
 ```
-#### 复杂度分析
-时间复杂度：O(L)
-其中 L 是链表的长度，first 与 second 各自遍历一次链表。
 
-空间复杂度：O(1)
-仅使用了常数级的指针变量，无额外空间开销。
+#### 复杂度分析
+
+* **时间复杂度**：O(L)，其中 L 为链表长度。
+* **空间复杂度**：O(1)，仅使用常数额外指针。
+
+---
+
+### 4.2 检测环形链表并找到环的入口
+
+参考：[Leetcode 142 - Linked List Cycle II](https://leetcode.cn/problems/linked-list-cycle-ii/)
+
+#### 思路与算法
+
+Floyd 判圈算法（快慢指针法）利用了两个不同速度的指针：
+
+* 快指针 `fast` 每次走两步；
+* 慢指针 `slow` 每次走一步。
+
+若链表中存在环，快慢指针最终会在环内相遇；若不存在环，`fast` 会先到达 `NULL`。
+当两者相遇后，将一个新指针 `ptr` 从头节点出发，与 `slow` 同速前进，
+两者再次相遇的节点就是环的入口。
+
+#### 步骤说明
+
+1. **初始化**
+   设置 `fast = head`, `slow = head`。
+
+2. **第一阶段：检测环的存在**
+   同时移动快慢指针：
+
+   ```cpp
+   while (fast && fast->next) {
+       fast = fast->next->next;
+       slow = slow->next;
+       if (fast == slow) break;
+   }
+   ```
+
+   若循环结束时 `fast == NULL` 或 `fast->next == NULL`，说明无环，返回 `NULL`。
+
+3. **第二阶段：寻找环的入口**
+   若存在环，设 `ptr = head`，然后同步移动 `ptr` 与 `slow`：
+
+   ```cpp
+   while (ptr != slow) {
+       ptr = ptr->next;
+       slow = slow->next;
+   }
+   return ptr;
+   ```
+
+   当两者再次相遇时，即为环的入口节点。
+
+---
+
+#### 代码实现（C++）
+
+```cpp
+class Solution {
+public:
+    ListNode* detectCycle(ListNode* head) {
+        ListNode* fast = head;
+        ListNode* slow = head;
+
+        // 阶段1：判断是否存在环
+        while (fast && fast->next) {
+            fast = fast->next->next;
+            slow = slow->next;
+            if (fast == slow) break;
+        }
+
+        // 无环情况
+        if (!fast || !fast->next) return NULL;
+
+        // 阶段2：寻找环入口
+        ListNode* ptr = head;
+        while (ptr != slow) {
+            ptr = ptr->next;
+            slow = slow->next;
+        }
+        return ptr;
+    }
+};
+```
+
+#### 复杂度分析
+
+* **时间复杂度**：O(n)，n 为链表长度，快慢指针最多各遍历一次链表。
+* **空间复杂度**：O(1)，仅使用两个额外指针。
+
+---
+
+### 4.3 方法总结
+
+双指针的关键在于**控制两者之间的相对关系**：
+
+* 在删除倒数第 N 个节点时，利用“固定间距”；
+* 在检测环时，利用“速度差”。
+
+这种技巧不仅能减少遍历次数，还能让算法结构更直观优雅。
+在链表中，掌握双指针思想几乎等于掌握了大部分核心问题的解题思路。
+
+
