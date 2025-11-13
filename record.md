@@ -928,3 +928,402 @@ int main() {
 * **一维前缀和**适用于区间求和。
 * **二维前缀和**将这种思想推广到矩阵求和，使得子区域查询变为 O(1)。
 * 这类题的本质是：**减少重复计算，快速获得任意区域的累积信息**。
+
+
+
+---
+
+## 6. 哈希表与集合容器用法总结
+
+### 6.1 `unordered_map<Key, Value>` —— 无序哈希映射
+
+底层结构为哈希表，键（key）唯一，对应一个值（value）。
+平均查找、插入复杂度为 **O(1)**。
+
+#### 基本用法
+
+```cpp
+unordered_map<int, int> mp;
+unordered_map<string, double> score;
+```
+
+#### 插入元素
+
+```cpp
+mp[3] = 10;                        // 直接赋值插入
+mp.insert({5, 20});                // 花括号插入
+mp.insert(make_pair(7, 30));       // make_pair插入
+```
+
+#### 查找与访问
+
+```cpp
+auto it = mp.find(3);              // 查找键为3的元素
+if (it != mp.end())
+    cout << it->second;            // 访问对应的value
+```
+
+#### 判断键是否存在
+
+```cpp
+if (mp.count(3))
+    cout << "存在";
+else
+    cout << "不存在";
+```
+
+#### 删除与清空
+
+```cpp
+mp.erase(3);                       // 删除键为3的元素
+mp.clear();                        // 清空整个哈希表
+```
+
+#### 遍历
+
+```cpp
+for (auto &p : mp)
+    cout << p.first << " " << p.second << endl;
+```
+
+#### 特点说明
+
+* 键唯一，重复插入会覆盖旧值；
+* 无序存储，遍历顺序不可预测；
+* 访问不存在的键（如 `mp[x]`）会自动创建一个默认值。
+
+---
+
+### 6.2 `map<Key, Value>` —— 有序映射表
+
+底层结构为红黑树，键自动排序。
+查找、插入复杂度为 **O(log n)**。
+
+#### 基本用法
+
+```cpp
+map<int, int> mp;
+```
+
+#### 插入与访问
+
+```cpp
+mp[3] = 10;
+mp.insert({5, 20});
+cout << mp[3];                     // 输出value
+```
+
+#### 遍历（自动升序）
+
+```cpp
+for (auto &p : mp)
+    cout << p.first << " " << p.second << endl;
+```
+
+#### 特点说明
+
+* 键唯一；
+* 键自动按升序排列；
+* 可通过自定义比较函数实现降序或其他排序方式。
+
+---
+
+### 6.3 `unordered_set<Type>` —— 无序哈希集合
+
+底层为哈希表，只存键（key），不存值。
+平均查找、插入复杂度为 **O(1)**。
+
+#### 基本用法
+
+```cpp
+unordered_set<int> s;
+unordered_set<string> names;
+```
+
+#### 插入元素
+
+```cpp
+s.insert(3);
+s.insert(5);
+```
+
+#### 查找与判断
+
+```cpp
+if (s.find(3) != s.end())
+    cout << "找到";
+if (s.count(3))
+    cout << "存在";
+```
+
+#### 删除与遍历
+
+```cpp
+s.erase(3);
+for (auto &x : s)
+    cout << x << " ";
+```
+
+#### 特点说明
+
+* 无序存储；
+* 元素唯一；
+* 插入重复元素无效。
+
+---
+
+### 6.4 `set<Type>` —— 有序集合
+
+底层为红黑树结构，元素自动排序。
+查找、插入复杂度为 **O(log n)**。
+
+#### 基本用法
+
+```cpp
+set<int> s;
+```
+
+#### 插入与遍历
+
+```cpp
+s.insert(3);
+s.insert(1);
+s.insert(5);
+
+for (auto &x : s)
+    cout << x << " ";              // 输出：1 3 5
+```
+
+#### 查找与删除
+
+```cpp
+if (s.find(3) != s.end())
+    cout << "找到";
+
+s.erase(3);
+```
+
+#### 特点说明
+
+* 自动去重；
+* 元素有序（默认升序）；
+* 可自定义比较函数实现降序。
+
+---
+
+### 6.5 四种常见容器对比
+
+| 容器类型            | 是否有序 | 底层结构 | 是否允许重复键 | 查找/插入复杂度 | 是否可自定义排序 |
+| --------------- | ---- | ---- | ------- | -------- | -------- |
+| `unordered_map` | 否    | 哈希表  | 否       | 平均 O(1)  | 否        |
+| `map`           | 是    | 红黑树  | 否       | O(log n) | 是        |
+| `unordered_set` | 否    | 哈希表  | 否       | 平均 O(1)  | 否        |
+| `set`           | 是    | 红黑树  | 否       | O(log n) | 是        |
+
+---
+
+非常好，这样我们可以把哈希表与集合这一章写得完整且实用。
+下面是扩展后的 Markdown 笔记，从 **6.6** 开始补充 **`multimap` / `multiset`**，再单独写一节 **6.7 迭代器与访问语法详解（含 `iter->second` 说明）**。
+格式与你之前保持一致。
+
+---
+
+## 6.6 `multimap` 与 `multiset` —— 允许重复键的关联容器
+
+### 6.6.1 `multimap<Key, Value>`
+
+底层为红黑树结构，**允许相同 key 出现多次**。
+
+#### 定义
+
+```cpp
+multimap<int, string> mp;
+```
+
+#### 插入元素
+
+```cpp
+mp.insert({1, "apple"});
+mp.insert({2, "banana"});
+mp.insert({1, "orange"});     // 键1重复，允许
+```
+
+#### 遍历
+
+```cpp
+for (auto &p : mp)
+    cout << p.first << " -> " << p.second << endl;
+```
+
+输出结果（按 key 升序）：
+
+```
+1 -> apple
+1 -> orange
+2 -> banana
+```
+
+#### 查找所有相同键的元素
+
+```cpp
+auto range = mp.equal_range(1);   // 返回pair<iterator, iterator>
+for (auto it = range.first; it != range.second; ++it)
+    cout << it->second << " ";
+```
+
+#### 特点
+
+* 有序；
+* 允许重复键；
+* 无法使用 `operator[]`（即 `mp[1]` 形式不支持）。
+
+---
+
+### 6.6.2 `multiset<Type>`
+
+底层为红黑树结构，**允许相同元素多次插入**。
+
+#### 定义与插入
+
+```cpp
+multiset<int> s;
+s.insert(3);
+s.insert(1);
+s.insert(3);    // 重复插入合法
+```
+
+#### 遍历
+
+```cpp
+for (auto &x : s)
+    cout << x << " ";          // 输出：1 3 3
+```
+
+#### 查找与删除
+
+```cpp
+cout << s.count(3);            // 输出3的出现次数
+s.erase(s.find(3));            // 删除一个3
+```
+
+#### 特点
+
+* 元素自动有序；
+* 允许重复值；
+* 删除要小心，`erase(3)` 会删除所有值为3的元素；
+  如只删一个，用 `erase(find(3))`。
+
+---
+
+## 6.7 迭代器与访问语法详解（含 `iter->second`）
+
+在 C++ 的关联容器中（包括 map、unordered_map、multimap 等），迭代器是访问容器元素的关键工具。
+
+### 6.7.1 迭代器类型
+
+* 对于 `map` / `unordered_map`：
+  迭代器指向 **键值对（pair<const Key, Value>）**。
+
+* 对于 `set` / `unordered_set`：
+  迭代器指向单一的 **元素值（Key）**。
+
+---
+
+### 6.7.2 基本遍历语法
+
+#### map / unordered_map
+
+```cpp
+unordered_map<int, int> mp = {{1, 10}, {2, 20}, {3, 30}};
+
+for (auto it = mp.begin(); it != mp.end(); ++it) {
+    cout << it->first << " " << it->second << endl;
+}
+```
+
+#### 等价写法（结构化绑定 C++17）
+
+```cpp
+for (auto &[key, value] : mp)
+    cout << key << " " << value << endl;
+```
+
+---
+
+### 6.7.3 `it->first` 与 `it->second` 的含义
+
+* `it->first`：访问键（Key）；
+* `it->second`：访问值（Value）。
+
+解释：
+`it` 是指向 `pair<const Key, Value>` 的指针，所以
+`it->first` 等价于 `(*it).first`。
+
+示例：
+
+```cpp
+unordered_map<int, string> name;
+name[3] = "Alice";
+name[5] = "Bob";
+
+auto it = name.find(3);
+if (it != name.end()) {
+    cout << it->first;   // 输出 3
+    cout << it->second;  // 输出 "Alice"
+}
+```
+
+---
+
+### 6.7.4 对 `set` / `unordered_set` 的迭代器访问
+
+`set` 的迭代器指向元素本身，没有 `.first` 或 `.second`：
+
+```cpp
+set<int> s = {1, 2, 3};
+for (auto it = s.begin(); it != s.end(); ++it)
+    cout << *it << " ";
+```
+
+---
+
+### 6.7.5 常见用法示例整合
+
+#### 查找键是否存在并访问值
+
+```cpp
+unordered_map<int, int> mp;
+mp[1] = 100;
+mp[2] = 200;
+
+auto it = mp.find(1);
+if (it != mp.end())
+    cout << it->second;    // 输出100
+else
+    cout << "未找到";
+```
+
+#### 修改值
+
+```cpp
+mp[1] = 999;           // 直接修改
+it = mp.find(2);
+if (it != mp.end())
+    it->second += 10;   // 使用迭代器修改
+```
+
+---
+
+### 6.7.6 总结要点
+
+| 用法                  | 说明                         |
+| ------------------- | -------------------------- |
+| `it->first`         | 键（Key）                     |
+| `it->second`        | 值（Value）                   |
+| `*it`               | 对于 set 是元素值；对于 map 是 pair  |
+| `auto &[k, v] : mp` | C++17结构化绑定，直接展开键和值         |
+| `mp.find(key)`      | 返回迭代器（找到）或 `mp.end()`（未找到） |
+| `mp.count(key)`     | 判断是否存在（返回0或1）              |
+
+---
+
