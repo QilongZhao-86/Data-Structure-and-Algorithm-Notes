@@ -596,49 +596,34 @@ void deleteAtIndex(int index) {
 
 ---
 
-## 4. 双指针在链表遍历中的作用  
+## 4. 双指针专题完整总结：链表、数组到滑动窗口的全体系
 
-双指针（Two Pointers）是链表题中极为常用的技巧。  
-它通过同时控制两个指针的位置或速度差，能够在一次遍历中完成需要多次操作的任务。  
-在链表问题中，双指针常用于**定位节点、检测环、找中点、删除倒数节点**等情形。  
-下面通过两道经典题目来理解双指针的两种典型应用：  
+双指针并不只是一种技巧，而是一套处理“相对关系”的思想体系：
+指针之间的**间距关系**、**速度关系**、**方向关系**都会成为信息本身。
+它在链表中用于结构分析，在数组中用于高效搜索，在字符串中用于动态窗口维护。
 
-- **Leetcode 19：删除链表的倒数第 N 个节点**  
-- **Leetcode 142：环形链表 II（检测环的入口）**
+本专题总结五类代表性题目：
 
----
-
-### 4.1 删除链表的倒数第 N 个节点  
-参考：[Leetcode 19 - Remove Nth Node From End of List](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
-
-#### 思路与算法  
-
-在不预处理链表长度、且仅使用常数空间的前提下，我们可以用两个指针 `first` 和 `second`。  
-让 `first` 比 `second` **超前 n 个节点**，当 `first` 到达链表末尾时，`second` 就位于倒数第 n 个节点的前一个位置。  
-此时只需修改 `second->next` 即可完成删除。
-
-#### 步骤说明  
-
-1. **初始化**  
-   创建一个哑节点 `dummy`，令 `dummy->next = head`。  
-   这样即使删除的是头节点，也能统一处理逻辑。
-
-2. **建立间距**  
-   让 `first` 从 `head` 开始前进 `n` 次，使 `first` 比 `second` 提前 `n` 个节点。
-
-3. **同步前进**  
-   同时移动 `first` 和 `second`，直到 `first` 指向空。  
-   此时，`second->next` 即为需要删除的节点。
-
-4. **执行删除操作**  
-   执行 `second->next = second->next->next;` 完成删除。
-
-5. **返回结果**  
-   返回 `dummy->next` 即新的链表头节点。
+* 链表固定间距：删除链表倒数第 N 个节点
+* 链表快慢指针：环入口
+* 数组左右夹逼：四数之和
+* 数组区间收缩：接雨水
+* 滑动窗口：最长无重复子串
 
 ---
 
-#### 代码实现（C++）
+### 4.1 删除链表的倒数第 N 个节点
+
+题目链接：
+[https://leetcode.cn/problems/remove-nth-node-from-end-of-list/](https://leetcode.cn/problems/remove-nth-node-from-end-of-list/)
+
+#### 思路
+
+固定间距双指针：
+让 `first` 指针先走 n 步，再让 `first`、`second` 同时走。
+当 `first` 到达链尾时，`second` 正好在倒数第 n 个节点的前一个位置。
+
+#### 代码
 
 ```cpp
 class Solution {
@@ -647,13 +632,15 @@ public:
         ListNode* dummy = new ListNode(0, head);
         ListNode* first = head;
         ListNode* second = dummy;
-        for (int i = 0; i < n; ++i) {
+
+        for (int i = 0; i < n; ++i) 
             first = first->next;
-        }
+
         while (first) {
             first = first->next;
             second = second->next;
         }
+
         second->next = second->next->next;
         ListNode* ans = dummy->next;
         delete dummy;
@@ -662,81 +649,38 @@ public:
 };
 ```
 
-#### 复杂度分析
-
-* **时间复杂度**：O(L)，其中 L 为链表长度。
-* **空间复杂度**：O(1)，仅使用常数额外指针。
-
 ---
 
-### 4.2 检测环形链表并找到环的入口
+### 4.2 环形链表 II：环入口定位（快慢指针法）
 
-参考：[Leetcode 142 - Linked List Cycle II](https://leetcode.cn/problems/linked-list-cycle-ii/)
+题目链接：
+[https://leetcode.cn/problems/linked-list-cycle-ii/](https://leetcode.cn/problems/linked-list-cycle-ii/)
 
-#### 思路与算法
+#### 思路
 
-Floyd 判圈算法（快慢指针法）利用了两个不同速度的指针：
+Floyd 判圈算法核心：
 
-* 快指针 `fast` 每次走两步；
-* 慢指针 `slow` 每次走一步。
+* 快指针每次走 2 步
+* 慢指针每次走 1 步
+  若相遇，则证明存在环。
+  相遇后，让一个新指针从头开始走，与 `slow` 同速前进，两者再次相遇的位置就是入口。
 
-若链表中存在环，快慢指针最终会在环内相遇；若不存在环，`fast` 会先到达 `NULL`。
-当两者相遇后，将一个新指针 `ptr` 从头节点出发，与 `slow` 同速前进，
-两者再次相遇的节点就是环的入口。
-
-#### 步骤说明
-
-1. **初始化**
-   设置 `fast = head`, `slow = head`。
-
-2. **第一阶段：检测环的存在**
-   同时移动快慢指针：
-
-   ```cpp
-   while (fast && fast->next) {
-       fast = fast->next->next;
-       slow = slow->next;
-       if (fast == slow) break;
-   }
-   ```
-
-   若循环结束时 `fast == NULL` 或 `fast->next == NULL`，说明无环，返回 `NULL`。
-
-3. **第二阶段：寻找环的入口**
-   若存在环，设 `ptr = head`，然后同步移动 `ptr` 与 `slow`：
-
-   ```cpp
-   while (ptr != slow) {
-       ptr = ptr->next;
-       slow = slow->next;
-   }
-   return ptr;
-   ```
-
-   当两者再次相遇时，即为环的入口节点。
-
----
-
-#### 代码实现（C++）
+#### 代码
 
 ```cpp
 class Solution {
 public:
     ListNode* detectCycle(ListNode* head) {
-        ListNode* fast = head;
-        ListNode* slow = head;
+        ListNode *fast = head, *slow = head;
 
-        // 阶段1：判断是否存在环
         while (fast && fast->next) {
             fast = fast->next->next;
             slow = slow->next;
             if (fast == slow) break;
         }
 
-        // 无环情况
         if (!fast || !fast->next) return NULL;
 
-        // 阶段2：寻找环入口
         ListNode* ptr = head;
         while (ptr != slow) {
             ptr = ptr->next;
@@ -747,24 +691,175 @@ public:
 };
 ```
 
-#### 复杂度分析
+---
 
-* **时间复杂度**：O(n)，n 为链表长度，快慢指针最多各遍历一次链表。
-* **空间复杂度**：O(1)，仅使用两个额外指针。
+### 4.3 四数之和：排序 + 左右双指针
+
+题目链接：
+[https://leetcode.cn/problems/4sum/](https://leetcode.cn/problems/4sum/)
+
+#### 思路
+
+* 先排序
+* 外层两重循环固定前两个数
+* 内层双指针 `third`、`forst` 通过夹逼法逼近 target
+* 加上剪枝和去重优化
+
+#### 代码
+
+```cpp
+class Solution {
+public:
+    vector<vector<int>> fourSum(vector<int>& nums, int target) {
+        vector<vector<int>> ans;
+        int n = nums.size();
+        if (n < 4) return ans;
+
+        sort(nums.begin(), nums.end());
+
+        for (int first = 0; first < n - 3; first++) {
+            if (first > 0 && nums[first] == nums[first - 1]) continue;
+            if ((long)nums[first] + nums[first+1] + nums[first+2] + nums[first+3] > target) break;
+            if ((long)nums[first] + nums[n-1] + nums[n-2] + nums[n-3] < target) continue;
+
+            for (int second = first + 1; second < n - 2; second++) {
+                if (second > first + 1 && nums[second] == nums[second - 1]) continue;
+                if ((long)nums[first] + nums[second] + nums[second+1] + nums[second+2] > target) break;
+                if ((long)nums[first] + nums[second] + nums[n-1] + nums[n-2] < target) continue;
+
+                int third = second + 1, forst = n - 1;
+                while (third < forst) {
+                    long sum = (long)nums[first] + nums[second] + nums[third] + nums[forst];
+                    if (sum < target) third++;
+                    else if (sum > target) forst--;
+                    else {
+                        ans.push_back({nums[first], nums[second], nums[third], nums[forst]});
+                        while (third < forst && nums[third] == nums[third+1]) third++;
+                        while (third < forst && nums[forst] == nums[forst-1]) forst--;
+                        third++; 
+                        forst--;
+                    }
+                }
+            }
+        }
+        return ans;
+    }
+};
+```
 
 ---
 
-### 4.3 方法总结
+### 4.4 接雨水：双指针的区间收缩
 
-双指针的关键在于**控制两者之间的相对关系**：
+题目链接：
+[https://leetcode.cn/problems/trapping-rain-water/](https://leetcode.cn/problems/trapping-rain-water/)
 
-* 在删除倒数第 N 个节点时，利用“固定间距”；
-* 在检测环时，利用“速度差”。
+#### 思路
 
-这种技巧不仅能减少遍历次数，还能让算法结构更直观优雅。
-在链表中，掌握双指针思想几乎等于掌握了大部分核心问题的解题思路。
+核心思想：
+水的高度由左右两侧的最大高度决定。
+左右指针向中间收缩时，可以保证当前被处理的一侧，其内侧最大值是可信的。
+
+规则：
+
+* 如果 `left_max < right_max`，左侧决定水量 -> left++
+* 否则右侧决定水量 -> right--
+
+#### 代码
+
+```cpp
+class Solution {
+public:
+    int trap(vector<int>& height) {
+        int left = 0, right = height.size() - 1;
+        int left_max = 0, right_max = 0, ans = 0;
+
+        while (left < right) {
+            if (height[left] < height[right]) {
+                if (height[left] >= left_max)
+                    left_max = height[left];
+                else
+                    ans += left_max - height[left];
+                left++;
+            } else {
+                if (height[right] >= right_max)
+                    right_max = height[right];
+                else
+                    ans += right_max - height[right];
+                right--;
+            }
+        }
+
+        return ans;
+    }
+};
+```
 
 ---
+
+### 4.5 最长无重复子串：滑动窗口（字符串双指针）
+
+题目链接：
+[https://leetcode.cn/problems/longest-substring-without-repeating-characters/](https://leetcode.cn/problems/longest-substring-without-repeating-characters/)
+
+#### 思路
+
+“滑动窗口”本质就是双指针：
+
+* `right` 扩张窗口
+* 当窗口中出现重复字符时，`left` 收缩窗口
+  用一个数组或 map 记录字符出现的位置，实现动态调整窗口。
+
+#### 代码
+
+```cpp
+class Solution {
+public:
+    int lengthOfLongestSubstring(string s) {
+        vector<int> last(256, -1);
+        int left = 0, ans = 0;
+
+        for (int right = 0; right < s.size(); right++) {
+            if (last[s[right]] >= left) {
+                left = last[s[right]] + 1;
+            }
+            last[s[right]] = right;
+            ans = max(ans, right - left + 1);
+        }
+        return ans;
+    }
+};
+```
+
+---
+
+### 4.6 总体方法总结
+
+链表类问题：
+双指针利用的是“结构关系”
+
+* 固定间距：定位倒数节点
+* 速度差：检测环、寻找环入口
+
+数组类问题（排序后）：
+双指针利用的是“单调性 + 区间收缩”
+
+* 左右夹逼（求和类，如 2Sum/3Sum/4Sum）
+* 结构性夹逼（接雨水）
+
+字符串滑动窗口：
+双指针利用的是“动态窗口 + 信息记录”
+
+* 最长无重复子串
+* 最长包含 K 个不同字符子串
+* 最小覆盖子串
+
+双指针的本质在于：
+**用两个移动的边界构造信息，通过关系变化来减少无效搜索**。
+掌握这套体系，就能在链表、数组、字符串的众多核心题目中自由穿梭。
+
+---
+
 
 ## 5. 前缀和与多维前缀和
 
