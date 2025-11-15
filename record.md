@@ -1223,9 +1223,9 @@ s.erase(3);
 
 ---
 
-## 6.6 `multimap` 与 `multiset` —— 允许重复键的关联容器
+### 6.6 `multimap` 与 `multiset` —— 允许重复键的关联容器
 
-### 6.6.1 `multimap<Key, Value>`
+#### 6.6.1 `multimap<Key, Value>`
 
 底层为红黑树结构，**允许相同 key 出现多次**。
 
@@ -1274,7 +1274,7 @@ for (auto it = range.first; it != range.second; ++it)
 
 ---
 
-### 6.6.2 `multiset<Type>`
+#### 6.6.2 `multiset<Type>`
 
 底层为红黑树结构，**允许相同元素多次插入**。
 
@@ -1310,11 +1310,11 @@ s.erase(s.find(3));            // 删除一个3
 
 ---
 
-## 6.7 迭代器与访问语法详解（含 `iter->second`）
+### 6.7 迭代器与访问语法详解（含 `iter->second`）
 
 在 C++ 的关联容器中（包括 map、unordered_map、multimap 等），迭代器是访问容器元素的关键工具。
 
-### 6.7.1 迭代器类型
+#### 6.7.1 迭代器类型
 
 * 对于 `map` / `unordered_map`：
   迭代器指向 **键值对（pair<const Key, Value>）**。
@@ -1324,7 +1324,7 @@ s.erase(s.find(3));            // 删除一个3
 
 ---
 
-### 6.7.2 基本遍历语法
+#### 6.7.2 基本遍历语法
 
 #### map / unordered_map
 
@@ -1345,7 +1345,7 @@ for (auto &[key, value] : mp)
 
 ---
 
-### 6.7.3 `it->first` 与 `it->second` 的含义
+#### 6.7.3 `it->first` 与 `it->second` 的含义
 
 * `it->first`：访问键（Key）；
 * `it->second`：访问值（Value）。
@@ -1370,7 +1370,7 @@ if (it != name.end()) {
 
 ---
 
-### 6.7.4 对 `set` / `unordered_set` 的迭代器访问
+#### 6.7.4 对 `set` / `unordered_set` 的迭代器访问
 
 `set` 的迭代器指向元素本身，没有 `.first` 或 `.second`：
 
@@ -1382,7 +1382,7 @@ for (auto it = s.begin(); it != s.end(); ++it)
 
 ---
 
-### 6.7.5 常见用法示例整合
+#### 6.7.5 常见用法示例整合
 
 #### 查找键是否存在并访问值
 
@@ -1409,7 +1409,7 @@ if (it != mp.end())
 
 ---
 
-### 6.7.6 总结要点
+#### 6.7.6 总结要点
 
 | 用法                  | 说明                         |
 | ------------------- | -------------------------- |
@@ -1421,4 +1421,99 @@ if (it != mp.end())
 | `mp.count(key)`     | 判断是否存在（返回0或1）              |
 
 ---
+## 7.KMP 算法详解与实现
+### 7.1 KMP 算法简介
+KMP（Knuth-Morris-Pratt）算法是一种高效的字符串匹配算法，旨在解决在主串中查找模式串的问题。相比于朴素的字符串匹配算法，KMP 通过预处理模式串，避免了在匹配失败时回溯主串，从而提高了匹配效率。KMP 算法的时间复杂度为 O(n + m)，其中 n 是主串长度，m 是模式串长度。
+### 7.2 KMP 算法原理
+KMP 算法的核心思想是利用模式串本身的信息，构建一个“部分匹配表”（也称为“失配函数”），用于指导匹配过程中的跳转。部分匹配表记录了模式串中每个位置前缀和后缀的最长公共元素长度，从而在匹配失败时，可以根据部分匹配表跳过一些不必要的比较。
+### 7.3 部分匹配表的构建
+部分匹配表的构建是 KMP 算法的关键步骤。以下是构建部分匹配表的代码实现：
+```cpp
+vector<int> buildPartialMatchTable(const string &pattern) {
+    int m = pattern.size();
+    vector<int> lps(m, 0); // lps[i] 表示 pattern[0..i] 的最长前后缀长度
+    int len = 0; // 当前最长前后缀长度
+    int i = 1;
+
+    while (i < m) {
+        if (pattern[i] == pattern[len]) {
+            len++;
+            lps[i] = len;
+            i++;
+        } else {
+            if (len != 0) {
+                len = lps[len - 1]; // 回溯到上一个最长前后缀长度
+            } else {
+                lps[i] = 0;
+                i++;
+            }
+        }
+    }
+    return lps;
+}
+```
+---
+### 7.4 KMP 匹配过程
+KMP 匹配过程利用部分匹配表来指导匹配过程。以下是
+KMP 匹配的代码实现：
+```cpp
+vector<int> KMPSearch(const string &text, const string &pattern) {
+    vector<int> lps = buildPartialMatchTable(pattern);
+    vector<int> result; // 存储匹配结果的起始索引
+    int n = text.size();
+    int m = pattern.size();
+    int i = 0; // 主串索引
+    int j = 0; // 模式串索引
+
+    while (i < n) {
+        if (pattern[j] == text[i]) {
+            i++;
+            j++;
+        }
+
+        if (j == m) {
+            result.push_back(i - j); // 找到匹配，记录起始索引
+            j = lps[j - 1]; // 根据部分匹配表跳转
+        } else if (i < n && pattern[j] != text[i]) {
+            if (j != 0) {
+                j = lps[j - 1]; // 根据部分匹配表跳转
+            } else {
+                i++;
+            }
+        }
+    }
+    return result;
+}
+```
+---
+### 7.5 示例与测试
+以下是一个使用 KMP 算法进行字符串匹配的示例：
+```cpp
+int main() {
+    string text = "ababcabcabababd";
+    string pattern = "ababd";
+    vector<int> matches = KMPSearch(text, pattern);
+
+    cout << "Pattern found at indices: ";
+    for (int index : matches) {
+        cout << index << " ";
+    }
+    cout << endl;
+    return 0;
+}
+```
+### 7.6 总结
+KMP 算法通过预处理模式串，构建部分匹配表，实现了高效的字符串匹配。其时间复杂度为 O(n + m)，适用于需要频繁进行字符串匹配的场景。理解 KMP 算法的原理和实现，有助于提升算法设计和问题解决能力。
+### 7.7 KMP等价封装函数
+```cpp
+int ans= s.find(pattern); // 返回模式串在主串中首次出现的位置索引，未找到返回-1
+//或者可以找出所有匹配的位置：
+size_t pos = text.find(pattern);
+while (pos != string::npos) {
+    cout << "Pattern found at index: " << pos << endl;
+    pos = text.find(pattern, pos + 1); // 从下一个位置继续查找
+}
+```
+
+
 
