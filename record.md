@@ -1525,7 +1525,7 @@ while (pos != string::npos) {
 
 ## 8. 序列周期问题
 LeetCode 题目链接：[459.重复子字符串模式](https://leetcode.cn/problems/repeated-substring-pattern/)
-## 8.1 枚举子串长度 + 周期性验证
+### 8.1 枚举子串长度 + 周期性验证
 ### 思路解析
 
 核心思想是：
@@ -1607,12 +1607,12 @@ s[j] = s[j - k]
 
 ---
 
-## 8.2 拼接字符串 + 查找（数学周期推论）
+### 8.2 拼接字符串 + 查找（数学周期推论）
 
 ### 思路解析
 
 该方法非常巧妙，不需要显式地枚举周期。
-关键操作是：
+关键操作是:
 
 ```
 s2 = s + s
@@ -1674,7 +1674,7 @@ s+s 的 find 方法本质上是利用了这一周期结构，只是没有显式�
 
 ---
 
-## 8.3 方法比较与理论总结
+### 8.3 方法比较与理论总结
 
 | 方法      | 优势             | 劣势                   | 理论基础                |
 | ------- | -------------- | -------------------- | ------------------- |
@@ -1702,7 +1702,7 @@ n % period == 0
 
 ---
 
-## 8.4 总结
+### 8.4 总结
 
 1. 重复子串本质是 **寻找最小周期**。
 2. 枚举法是直接使用周期的定义进行暴力验证。
@@ -1981,3 +1981,223 @@ public:
 
 本题被普遍视为学习“单调队列”的最佳切入点，也是数据结构优化的重要案例。
 
+## 10. 堆（priority_queue）与 TopK 高频元素
+
+堆（Heap）是实现“优先访问最大值或最小值”最常见的数据结构。
+在 C++ 中堆对应 priority_queue，默认是 大根堆（最大值优先）。
+而 TopK 高频元素这个经典题，刚好体现了 大根堆 vs 小根堆 的差别。
+
+### 10.1 题目：前 K 个高频元素
+
+LeetCode 347: [347. Top K Frequent Elements](https://leetcode.cn/problems/top-k-frequent-elements/)题目要求从数组中找出出现次数最多的 k 个元素。并且时间复杂度必须优于 O(n log n)。
+
+### 10.2 我自己的代码（大根堆实现）
+
+下面是我自己写的版本。
+流程简单直接：
+
+用 unordered_map 统计频率
+
+用大根堆把所有元素都丢进去
+
+Pop k 次得到结果
+```cpp
+class Solution {
+public:
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        unordered_map<int,int> freq;
+        for(int x : nums) freq[x]++;
+
+        priority_queue<pair<int,int>> pq;
+        for(auto &p : freq) {
+            pq.emplace(p.second, p.first);   // (频率, 值)
+        }
+
+        vector<int> ans;
+        for(int i=0; i<k; i++){
+            ans.push_back(pq.top().second);
+            pq.pop();
+        }
+        return ans;
+    }
+};
+```
+
+✔ 优点
+
+直观、容易写
+
+思路清晰
+
+✘ 缺点
+
+堆的大小 = m（不同数字种类数）
+
+时间复杂度 = O(m log m)
+
+空间开销大
+
+没有利用“只需要前 k 个”的优势
+
+### 10.3 官方题解（小根堆 TopK 方法）
+
+官方方法更优。
+堆中最多只放 k 个元素，多了就踢掉最小的。
+
+核心思想：
+
+用“小根堆”，让堆顶永远是当前 top-k 中最小的频率。
+若新元素比堆顶大，就替换。
+
+代码如下：
+```cpp
+class Solution {
+public:
+    static bool cmp(pair<int, int>& a, pair<int, int>& b) {
+        return a.second > b.second; // 小根堆：频率小的优先
+    }
+
+    vector<int> topKFrequent(vector<int>& nums, int k) {
+        unordered_map<int, int> freq;
+        for (int x : nums) freq[x]++;
+
+        priority_queue<
+            pair<int,int>,
+            vector<pair<int,int>>,
+            decltype(&cmp)
+        > pq(cmp);
+
+        for (auto& [num, count] : freq) {
+            if (pq.size() == k) {
+                if (pq.top().second < count) {
+                    pq.pop();
+                    pq.emplace(num, count);
+                }
+            } else {
+                pq.emplace(num, count);
+            }
+        }
+
+        vector<int> res;
+        while (!pq.empty()) {
+            res.push_back(pq.top().first);
+            pq.pop();
+        }
+        return res;
+    }
+};
+```
+### 10.4 两种方法对比总结
+项目	我的实现（大根堆）	官方实现（小根堆）
+堆大小	m（种类数）	k（固定）
+时间复杂度	O(m log m)	O(m log k)
+空间复杂度	O(m)	O(k)
+思路	全排序	维护前 K 大
+易写性	简单	稍复杂
+性能	一般	强（k ≪ m 时非常明显）
+### 10.5 priority_queue 小根堆的语法总结（最重要）
+
+C++ 默认是大根堆，如果你想变成小根堆，需要指定 Compare。
+
+下面我总结 四种写法，任选一种即可。
+
+#### 10.5.1 方式一（最佳）：用 lambda
+```cpp
+auto cmp = [](const pair<int,int>& a, const pair<int,int>& b) {
+    return a.second > b.second;  // 小根堆
+};
+
+priority_queue<
+    pair<int,int>,
+    vector<pair<int,int>>,
+    decltype(cmp)
+> pq(cmp);
+```
+
+简洁、现代、推荐。
+
+#### 10.5.2 方式二：用 struct（传统稳定）
+```cpp
+struct Cmp {
+    bool operator()(const pair<int,int>& a, const pair<int,int>& b) const {
+        return a.second > b.second;
+    }
+};
+priority_queue<pair<int,int>, vector<pair<int,int>>, Cmp> pq;
+```
+容易理解，不用 decltype。
+
+#### 10.5.3 方式三（超简洁）：用 greater
+
+前提：你把“频率”放在 pair 前面：
+
+```cpp
+priority_queue<
+    pair<int,int>,
+    vector<pair<int,int>>,
+    greater<pair<int,int>>
+> pq;
+```
+
+然后：
+```cpp
+pq.emplace(count, num);
+```
+
+这是写 TopK 最常用的技巧！
+
+#### 10.5.4 方式四：用函数指针（官方写法）
+```cpp
+priority_queue<pair<int,int>, vector<pair<int,int>>, decltype(&cmp)> pq(cmp);
+```
+
+比较难记，不推荐，但是题解里用了。
+
+### 10.6 什么时候应该用“大小为 k 的小根堆”？
+
+只要你的任务是：
+
+找前 k 大频率
+
+找前 k 大值
+
+找前 k 小值的反面版本
+
+实时维护一组数据的前 k 名
+
+流式 topK（数据不断进来）
+
+高频单词（word frequency）
+
+电影评分 top10
+
+这种问题都适合“固定 k 的小根堆”。
+
+### 10.7 通用 TopK 模板（可直接复用）
+
+下面是最推荐的写法（使用 greater）：
+```cpp
+vector<int> topKFrequent(vector<int>& nums, int k) {
+    unordered_map<int,int> freq;
+    for (int x : nums) freq[x]++;
+
+    priority_queue<
+        pair<int,int>,
+        vector<pair<int,int>>,
+        greater<pair<int,int>>
+    > pq; // 小根堆：(频率, 值)
+
+    for (auto &p : freq) {
+        pq.emplace(p.second, p.first);
+        if (pq.size() > k) pq.pop(); // 维护堆大小 <= k
+    }
+
+    vector<int> res;
+    while (!pq.empty()) {
+        res.push_back(pq.top().second);
+        pq.pop();
+    }
+    return res;
+}
+```
+优雅、简洁、性能最高。
