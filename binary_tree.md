@@ -381,3 +381,42 @@ public:
 复杂度分析
 时间复杂度：O(n)，其中 n 是二叉树的节点数。没有左子树的节点只被访问一次，有左子树的节点被访问两次。
 空间复杂度：O(1)。只操作已经存在的指针（树的空闲指针），因此只需要常数的额外空间。
+
+### 层序遍历
+思路与算法
+层序遍历又称广度优先遍历，是指从二叉树的根节点开始，逐层从左到右访问每一个节点，直到遍历完整棵树。我们可以利用队列这一数据结构来实现层序遍历，具体做法如下：
+将根节点加入队列；
+当队列不为空时，执行以下操作：
+从队列中取出队首节点 node，并将 node 的值加入答案；
+如果 node 的左子节点不为空，将左子节点加入队列；
+如果 node 的右子节点不为空，将右子节点加入队列；
+代码
+```cpp
+class Solution {
+public:
+    vector<int> levelOrder(TreeNode* root) {
+        vector<int> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        queue<TreeNode*> q;
+        q.emplace(root);
+        while (!q.empty()) {
+            TreeNode* node = q.front();
+            q.pop();
+            res.emplace_back(node->val);
+            if (node->left != nullptr) {
+                q.emplace(node->left);
+            }
+            if (node->right != nullptr) {
+                q.emplace(node->right);
+            }
+        }
+        return res;
+    }
+};
+```
+复杂度分析
+时间复杂度：O(n)，其中 n 是二叉树的节点数。每一个节点恰好被遍历一次。
+空间复杂度：O(n)，为队列的开销，最坏情况下队列中会存储 O(n) 个节点。
