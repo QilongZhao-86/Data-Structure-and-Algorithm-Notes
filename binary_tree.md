@@ -420,3 +420,36 @@ public:
 复杂度分析
 时间复杂度：O(n)，其中 n 是二叉树的节点数。每一个节点恰好被遍历一次。
 空间复杂度：O(n)，为队列的开销，最坏情况下队列中会存储 O(n) 个节点。
+如果是按二维vector返回每一层的节点值，可以参考[102. 二叉树的层序遍历](https://leetcode-cn.com/problems/binary-tree-level-order-traversal/)。
+写法如下：
+```cpp
+class Solution {
+public:
+    vector<vector<int>> levelOrder(TreeNode* root) {
+        vector<vector<int>> res;
+        if (root == nullptr) {
+            return res;
+        }
+
+        queue<TreeNode*> q;
+        q.emplace(root);
+        while (!q.empty()) {
+            int size = q.size();
+            vector<int> level;
+            for (int i = 0; i < size; ++i) {
+                TreeNode* node = q.front();
+                q.pop();
+                level.emplace_back(node->val);
+                if (node->left != nullptr) {
+                    q.emplace(node->left);
+                }
+                if (node->right != nullptr) {
+                    q.emplace(node->right);
+                }
+            }
+            res.emplace_back(level);
+        }
+        return res;
+    }
+};
+``` 
