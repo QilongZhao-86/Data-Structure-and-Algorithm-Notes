@@ -2201,3 +2201,301 @@ vector<int> topKFrequent(vector<int>& nums, int k) {
 }
 ```
 优雅、简洁、性能最高。
+## 11. 二叉树视图问题（View Problems）
+[二叉树的右视图](https://leetcode.cn/problems/binary-tree-right-side-view/description/ )
+本章讨论从某个“视角”观察二叉树时能看到的节点序列。  
+典型问题包括：
+
+- 二叉树右视图（Right Side View）
+- 二叉树左视图（Left Side View）
+- 其他拓展视图（上视图 / 下视图等）
+
+本节只整理 **右视图（Right Side View）**，作为视图类问题的基础模板。
+
+---
+
+### 11.1 二叉树右视图（Right Side View）
+
+#### 11.1.1 题目描述
+
+给定一棵二叉树的根节点 `root`，返回从**右侧**观察这棵树时，每一层能看到的节点值（从上到下的顺序）。
+
+示意例子：
+
+```text
+    1
+   / \
+  2   3
+   \   \
+    5   4
+```
+从右侧看，每一层能看到的节点为：
+	•	第 0 层：1
+	•	第 1 层：3
+	•	第 2 层：4
+
+输出结果：
+
+[1, 3, 4]
+
+
+#### 11.1.2 思路总览
+本质：右视图 = 每一层的最右节点。
+
+因此问题可以转化为：
+
+设计一种遍历方式，在遍历过程中，能够在每个深度（层数）上选出“最右”的那个节点。
+
+常用两种解法：
+	1.	DFS（深度优先搜索，右子树优先）
+	•	遍历顺序：右子树 → 左子树
+	•	每层第一次访问到的节点就是最右节点
+	2.	BFS（广度优先搜索，层序遍历）
+	•	每层从左到右访问
+	•	每层最后一个访问的节点就是最右节点
+
+两种方法都遍历整棵树，但只记录对答案有贡献的节点（每层 1 个），属于“遍历中的关键信息提取”。
+
+#### 11.1.3 解法一：DFS（右子树优先）
+核心思想：
+	•	改变 DFS 的访问顺序：先访问右子树，再访问左子树。
+	•	对于每一层，第一次访问到的节点必然是这层最右侧的节点。
+	•	用 depth == ans.size() 判断“是否是该层第一次访问”，若是，则将当前节点值加入答案数组。
+
+递归搜索顺序：
+
+根节点（depth = 0）
+  ├─ 先递归右子树（depth + 1）
+  └─ 再递归左子树（depth + 1）
+
+这样在某一个 depth 上，第一个被访问到的节点，必然来自当前层最右侧路径。
+
+代码实现（C++）
+```cpp
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        vector<int> ans;
+        dfs(root, 0, ans);
+        return ans;
+    }
+
+private:
+    void dfs(TreeNode* node, int depth, vector<int>& ans) {
+        if (!node) return;
+
+        // 若当前深度首次被访问（depth == ans.size()），记录该节点
+        if (depth == ans.size()) {
+            ans.push_back(node->val);
+        }
+
+        // 先访问右子树，再访问左子树
+        dfs(node->right, depth + 1, ans);
+        dfs(node->left, depth + 1, ans);
+    }
+};
+
+```
+
+正确性说明要点
+	1.	访问顺序保证“最右优先”
+对于每一层，DFS 总是沿着右侧路径优先深入，因此在深度 d 第一次访问到的节点一定是该层最右侧的节点之一。
+	2.	depth == ans.size() 的含义
+	•	ans.size() 始终等于当前已经记录的层数。
+	•	当第一次到达某个深度 depth 时，depth == ans.size() 一定成立。
+	•	后续若再到达同一深度（例如从左子树方向），此时 depth < ans.size()，不会重复记录，保证每层只保留一个节点。
+
+
+复杂度分析
+	•	时间复杂度： O(n)
+每个节点被递归访问一次。
+	•	空间复杂度： O(h)
+其中 h 为树的高度，递归调用栈的最大深度。
+	•	最好情况（平衡树）：O(log n)
+	•	最坏情况（退化为链表）：O(n)
+
+
+细节与易错点
+	•	访问顺序必须是 右 → 左，若写成左→右，则首次访问到的是最左节点，变成“左视图”。
+	•	depth 从 0 开始，对应根节点的层数。
+	•	空树时直接返回空数组。
+
+⸻
+
+11.1.4 解法二：BFS（层序遍历，只记录每层最后一个）
+核心思想：
+	•	使用队列进行层序遍历（BFS），每一轮处理一整层。
+	•	对于每一层：
+	•	从左到右依次出队；
+	•	用一个变量 rightmost 不断覆盖当前节点值；
+	•	这一层遍历完成后，rightmost 就是该层最右节点的值。
+
+无需保存每层的完整节点列表 vector<vector<int>>，只需要记录每层的“最后一个”。
+
+
+代码实现（C++）
+```cpp
+class Solution {
+public:
+    vector<int> rightSideView(TreeNode* root) {
+        vector<int> ans;
+        if (!root) return ans;
+
+        queue<TreeNode*> q;
+        q.push(root);
+
+        while (!q.empty()) {
+            int size = q.size();
+            int rightmost = 0;  // 当前层最右节点的值
+
+            for (int i = 0; i < size; i++) {
+                TreeNode* node = q.front();
+                q.pop();
+
+                // 不断覆盖，当本层循环结束时，rightmost 即为最后访问的那个节点
+                rightmost = node->val;
+
+                if (node->left)  q.push(node->left);
+                if (node->right) q.push(node->right);
+            }
+
+            ans.push_back(rightmost);
+        }
+
+        return ans;
+    }
+};
+```
+
+⸻
+
+正确性说明要点
+	1.	层序遍历保证“按层访问”
+队列中每一轮固定处理一层节点，size = q.size() 即当前层节点数。
+	2.	左 → 右 入队，右节点在当前层最后访问
+	•	入队顺序为 left 再 right；
+	•	出队时，该层右侧节点总是后进入队列、后出队；
+	•	rightmost 在该层循环中不断被覆盖，循环结束时为该层最后一个出队节点，即最右节点。
+	3.	不需要保存整层节点
+相比于 vector<vector<int>> 保存全层后再取 back() 的方式，该方法只保留一个变量 rightmost，空间更优。
+
+⸻
+
+复杂度分析
+	•	时间复杂度： O(n)
+每个节点仅入队和出队各一次。
+	•	空间复杂度： O(n)
+最坏情况下（完全二叉树），队列中会存在约 n/2 个节点，故为 O(n)。
+
+⸻
+
+11.1.5 与“保存整层再取最后一个”的写法对比
+一种直观但不够高效的写法是：
+	1.	用 BFS 收集每层所有节点值，存入 vector<vector<int>> levels。
+	2.	遍历 levels，从每层中取最后一个元素 levels[i].back() 作为右视图结果。
+
+伪代码示意：
+```cpp
+vector<int> rightSideView(TreeNode* root) {
+    vector<vector<int>> levels;
+    vector<int> ans;
+    if (!root) return ans;
+
+    queue<TreeNode*> q;
+    q.push(root);
+
+    while (!q.empty()) {
+        int size = q.size();
+        levels.push_back(vector<int>());
+
+        for (int i = 0; i < size; i++) {
+            TreeNode* node = q.front();
+            q.pop();
+            levels.back().push_back(node->val);
+
+            if (node->left)  q.push(node->left);
+            if (node->right) q.push(node->right);
+        }
+    }
+
+    for (auto& vec : levels) {
+        ans.push_back(vec.back());
+    }
+
+    return ans;
+}
+```
+与上一节优化版对比：
+	•	相同点：
+	•	遍历顺序相同：层序 + 左到右；
+	•	所得答案一致。
+	•	不同点：
+	•	优化版只用一个 rightmost 变量，不保存整层；
+	•	上述写法需要额外的 vector<vector<int>> 保存每层所有节点值，空间开销更大；
+	•	优化版减少一次对 levels 的遍历，常数开销略小。
+
+因此，在只关心“每层最右节点”的场景下，推荐使用：
+	•	BFS：仅记录每层最后一个节点
+	•	或 DFS：记录每层首次访问的节点（右优先）
+
+⸻
+
+11.1.6 边界情况与测试用例
+编写或调试时建议覆盖如下测试：
+	1.	空树
+输入：root = nullptr
+输出：[]
+	2.	只有一个节点1
+输出：[1]
+	3.	完全左倾树
+```
+    1
+   /
+  2
+ /
+3
+```
+输出：[1, 2, 3]
+
+
+	4.	完全右倾树
+```
+1
+ \
+  2
+   \
+    3
+```
+输出：[1, 2, 3]
+
+
+	5.	不完全二叉树（有缺失节点）
+```
+    1
+   / \
+  2   3
+   \
+    5
+```
+输出：[1, 3, 5]
+
+
+
+⸻
+
+11.1.7 小结：视图类问题的统一模式（以右视图为例）
+	•	右视图的本质：每层的最右节点。
+	•	DFS 解法利用“访问顺序 + 第一次访问”的策略：
+	•	右 → 左；
+	•	每层首次访问即为最右节点。
+	•	BFS 解法利用“按层扫描 + 最后访问”的策略：
+	•	左 → 右；
+	•	每层最后访问即为最右节点。
+
+右视图为后续的：
+	•	左视图：每层“最左”节点；
+	•	其他视图问题（上视图 / 下视图）；
+
+提供了统一的思考模板：
+“按层次记录关键节点” + “控制遍历顺序”。
+
