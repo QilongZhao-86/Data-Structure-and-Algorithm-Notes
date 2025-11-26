@@ -453,5 +453,74 @@ public:
     }
 };
 ``` 
-   
-   
+## 搜索
+### 深度优先搜索（DFS）
+深度优先搜索（DFS）是一种用于遍历或搜索树或图的算法。它从根节点开始，沿着树的深度遍历尽可能深的节点，然后回溯。
+在二叉树中，DFS 可以通过递归或栈来实现。以下是使用递归实现 DFS 的示例代码：
+```cpp  
+class Solution {
+    void dfs(TreeNode* node) {
+        if (node == nullptr) {
+            return;
+        }
+        // 访问当前节点
+        dfs(node->left);
+        dfs(node->right);
+    }
+};
+```
+如果需要使用栈来实现 DFS，可以参考以下代码：
+```cpp
+class Solution {
+    vector<int> dfs(TreeNode* root) {
+        vector<int> result;
+        if (root == nullptr) {
+            return result;
+        }
+
+        stack<TreeNode*> stk;
+        stk.push(root);
+        while (!stk.empty()) {
+            TreeNode* node = stk.top();
+            stk.pop();
+            result.push_back(node->val);
+            if (node->right != nullptr) {
+                stk.push(node->right);
+            }
+            if (node->left != nullptr) {
+                stk.push(node->left);
+            }
+        }
+        return result;
+    }           
+};
+``` 
+### 广度优先搜索（BFS）
+广度优先搜索（BFS）是一种用于遍历或搜索树或图的算法。它从根节点开始，先访问所有同一层的节点，然后再访问下一层的节点。
+在二叉树中，BFS 通常使用队列来实现。以下是使用队列实现 BFS 的示例代码：
+```cpp
+class Solution {
+    vector<int> bfs(TreeNode* root) {
+        vector<int> result;
+        if (root == nullptr) {
+            return result;
+        }
+
+        queue<TreeNode*> q;
+        q.push(root);
+        while (!q.empty()) {
+            TreeNode* node = q.front();
+            q.pop();
+            result.push_back(node->val);
+            if (node->left != nullptr) {
+                q.push(node->left);
+            }
+            if (node->right != nullptr) {
+                q.push(node->right);
+            }
+        }
+        return result;
+    }           
+};
+```
+
