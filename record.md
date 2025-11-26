@@ -2499,3 +2499,323 @@ vector<int> rightSideView(TreeNode* root) {
 提供了统一的思考模板：
 “按层次记录关键节点” + “控制遍历顺序”。
 
+下面给你一份**从 `## 12. 二叉树的递归` 开始的笔记**。
+我会保持你之前写作的风格：结构清晰、思路递进、例题贯穿，同时把“递归思想”讲得尽可能本质化——让它像一把钥匙，能开所有二叉树题。
+
+语气我保持平实解释式，不带我自身的风格去污染你的笔记。
+
+---
+
+## 12. 二叉树的递归
+
+二叉树题的核心技巧几乎都可以归结为一句话：
+
+> **递归的本质，就是让当前节点把它该做的事做好，然后把剩下的交给它的左右子树。**
+
+二叉树本身就是递归结构：每个节点都是一棵“更小的树”。
+因此算法天然适合递归描述。
+
+在二叉树中，递归一般分为两类思维方式：
+
+---
+
+### 12.1 两类经典递归思维模式
+
+#### **（1）自顶向下（Top-Down）——“从父到子”逐层传递信息**
+
+常见操作：路径长度、深度计数、累积值、约束条件传递。
+
+写法特征：递归函数参数里会传递状态，例如当前深度、当前路径和等。
+
+框架如下：
+
+```cpp
+void dfs(TreeNode* node, int param...) {
+    if (!node) return;
+
+    // 在进入子树之前处理当前节点
+    do_something(node, param);
+
+    // 将处理后的状态传给子树
+    dfs(node->left,  new_param1...);
+    dfs(node->right, new_param2...);
+}
+```
+
+典型例题：
+
+* 二叉树的最大深度（Top-Down 写法）
+* 路径和问题（113, 112, 129）
+
+这类适合“路径风格”的题。
+
+---
+
+#### **（2）自底向上（Bottom-Up）——“由子到父”汇总子树结果**
+
+常见操作：高度、直径、是否平衡、最大 BST 子树、对称性等。
+
+写法特征：
+递归返回值是一个结构，用于描述“当前子树”的信息。
+
+框架如下：
+
+```cpp
+Result dfs(TreeNode* node) {
+    if (!node) return base_case;
+
+    Result L = dfs(node->left);
+    Result R = dfs(node->right);
+
+    // 基于左右子树构建当前节点结果
+    return merge(L, R, node);
+}
+```
+
+典型例题：
+
+* 是否平衡 (110)
+* 最大深度（Bottom-Up 写法）
+* 二叉树的直径 (543)
+* 对称二叉树（你的之前那个 check 写法就是 Bottom-Up）
+
+这类适合“汇总型”的题。
+
+---
+
+### 12.2 递归的三要素（框架）
+
+大多数二叉树递归都能被拆成 3 个部分：
+
+1. **明确函数含义（返回值、参数）**
+
+   * 这一步最关键
+   * 一旦含义明确，代码几乎自动完成
+
+2. **写终止条件**
+
+   * 遇到空节点返回什么？
+   * 遇到叶子节点是否要特殊处理？
+
+3. **利用左右子树的递归结果得到当前答案**
+
+   * 递归的核心就是这一步
+   * 左子树给你一个结果，右子树给你一个结果
+   * 你只需“组合”它们
+
+整个过程像搭积木。
+
+---
+
+### 12.3 遇到二叉树递归题的思考流程
+
+把题目放在一边，只想以下 4 个问题：
+
+1. **函数的含义是什么？**
+
+   * “返回当前子树的高度”
+   * “返回当前子树是否平衡”
+   * “返回从 root 到当前节点的路径和”
+   * 明确后问题就清晰了
+
+2. **空节点怎么处理？**
+
+   * 返回 0？
+   * 返回 true？
+   * 返回空结构？
+
+3. **左右子树怎么递归？**
+
+4. **如何由左右子树的结果推导当前节点的答案？**
+
+每道题都可以这样拆。
+
+---
+
+### 12.4 从题单中挑典型题作为递归模板
+
+下面从你截图中的题单挑一些作为递归模板，按逻辑递进。
+
+---
+
+#### 12.4.1 前序 / 中序 / 后序遍历（144 / 145 / 94）
+
+这些是最基本的递归入门写法。
+
+前序遍历：
+
+```cpp
+void preorder(TreeNode* root, vector<int>& res) {
+    if (!root) return;
+    res.push_back(root->val);
+    preorder(root->left, res);
+    preorder(root->right, res);
+}
+```
+
+结构清晰，适合作为“递归框架的第一课”。
+
+---
+
+### 12.4.2 二叉树最大深度（104）
+
+Bottom-Up：
+
+```cpp
+int maxDepth(TreeNode* root) {
+    if (!root) return 0;
+    return 1 + max(maxDepth(root->left), maxDepth(root->right));
+}
+```
+
+这就是最典型的“左右子树返回高度、当前节点取最大”。
+
+---
+
+#### 12.4.3 对称二叉树（101）
+
+你的代码正是 Bottom-Up。
+
+把它写成单函数也可以：
+
+```cpp
+bool isSymmetric(TreeNode* root) {
+    function<bool(TreeNode*, TreeNode*)> check = [&](TreeNode* p, TreeNode* q) {
+        if (!p && !q) return true;
+        if (!p || !q) return false;
+        return p->val == q->val &&
+               check(p->left, q->right) &&
+               check(p->right, q->left);
+    };
+    return check(root->left, root->right);
+}
+```
+
+递归本质：
+**对称 = 左子树的左 与 右子树的右 对称 + 左子树的右 与 右子树的左 对称。**
+
+---
+
+#### 12.4.4 是否平衡二叉树（110）
+
+最能体现返回结构体思想：
+
+```cpp
+int dfs(TreeNode* root) {
+    if (!root) return 0;
+
+    int L = dfs(root->left);
+    int R = dfs(root->right);
+    if (L == -1 || R == -1 || abs(L - R) > 1) return -1;
+    return max(L, R) + 1;
+}
+
+bool isBalanced(TreeNode* root) {
+    return dfs(root) != -1;
+}
+```
+
+这种 “返回高度 + 特殊值表示非法” 的写法很常用。
+下面是我的写法：
+```cpp
+int maxdepth(TreeNode* root)
+    {
+        if(!root)return 0;
+        return max(maxdepth(root->left),maxdepth(root->right))+1;
+    }
+    bool isBalanced(TreeNode* root) {
+        if(!root)
+        return true;
+        int a=maxdepth(root->right)-maxdepth(root->left);
+        int b=maxdepth(root->left)-maxdepth(root->right);
+        if(a>1||b>1)
+        return false;
+        return isBalanced(root->left)&&isBalanced(root->right);
+    }
+```
+
+---
+
+#### 12.4.5 二叉树直径（543）
+
+经典“左右子树贡献”问题：
+
+```cpp
+int diameter = 0;
+
+int dfs(TreeNode* root) {
+    if (!root) return 0;
+
+    int L = dfs(root->left);
+    int R = dfs(root->right);
+
+    diameter = max(diameter, L + R);
+    return 1 + max(L, R);
+}
+```
+
+**直径 = 左子树高度 + 右子树高度。**
+
+---
+
+#### 12.4.6 路径和 I / II / III（112 / 113 / 437）
+
+Top-Down 的典型：
+
+```cpp
+bool hasPathSum(TreeNode* root, int target) {
+    if (!root) return false;
+    if (!root->left && !root->right) return root->val == target;
+    return hasPathSum(root->left, target - root->val) ||
+           hasPathSum(root->right, target - root->val);
+}
+```
+
+递归在路径类题里非常自然：
+路径之和由父节点决定子节点的“剩余目标”。
+
+---
+### 12.5 通过先序，中序，后序构建二叉树（105 / 106 / 889）
+典型的递归构建问题：
+
+```cpp  
+TreeNode* buildTree(vector<int>& preorder, int preStart, int preEnd,
+                    vector<int>& inorder, int inStart, int inEnd,
+                    unordered_map<int, int>& inIndex) {
+    if (preStart > preEnd || inStart > inEnd) return nullptr;
+
+    int rootVal = preorder[preStart];
+    TreeNode* root = new TreeNode(rootVal);
+    int inRootIndex = inIndex[rootVal];
+    int leftSize = inRootIndex - inStart;
+
+    root->left = buildTree(preorder, preStart + 1, preStart + leftSize,
+                           inorder, inStart, inRootIndex - 1, inIndex);
+    root->right = buildTree(preorder, preStart + leftSize + 1, preEnd,
+                            inorder, inRootIndex + 1, inEnd, inIndex);
+    return root;
+}
+```
+---
+### 12.6 总结：二叉树递归的统一视角
+
+无论题目是什么，你都能把它归入下面任意一类：
+
+1. **遍历型（访问每个节点）**
+
+   * 前序、中序、后序、求平均值、统计节点数等
+   * 框架：访问当前节点 → 递归左右
+
+2. **汇总型（子树结果组合）**
+
+   * 高度、直径、是否平衡、是否对称
+   * 框架：递归左右子树 → 合并两侧结果
+
+3. **路径型（在参数中传状态）**
+
+   * 路径和、前序路径、回溯
+   * 框架：参数带状态 → 递归传递状态
+
+只要你识别出题目属于哪一类，递归解法几乎自动成型。
+
+---
