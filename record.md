@@ -2819,3 +2819,105 @@ TreeNode* buildTree(vector<int>& preorder, int preStart, int preEnd,
 只要你识别出题目属于哪一类，递归解法几乎自动成型。
 
 ---
+## 13. 二叉搜索树的最小绝对差（530）
+题目链接：[530. Minimum Absolute Difference in BST](https://leetcode.cn/problems/minimum-absolute-difference-in-bst/)
+
+---
+
+### 中序遍历求二叉搜索树最小绝对差
+
+### 思路与核心原理
+
+二叉搜索树（BST）的关键性质是：
+
+**中序遍历序列是严格递增的。**
+
+如果将整棵 BST 中的所有节点按中序遍历列成数组：
+
+```
+a[0] < a[1] < a[2] < ... < a[n-1]
+```
+
+那么最小绝对差必然来自某一对 **相邻元素**：
+
+```
+min( a[i+1] - a[i] )
+```
+
+原因很简单：
+一旦跳过相邻关系去比较更远的两个元素，比如 `(a[i], a[i+2])`，它们之间的差必然更大。
+
+基于这一性质，问题就变成：
+
+> 在不破坏 BST 结构的前提下获取“有序序列里的相邻差”。
+
+---
+
+### 两种方式实现
+
+1）**先中序遍历存到数组，再遍历数组求相邻差值。**
+这种可行，但需要额外数组空间。
+
+2）**直接在中序遍历过程中，用 pre 保存上一个访问到的节点值。**
+这样遍历到当前节点时，与 pre 相减即可得到当前的相邻差值，空间更省。
+
+为了标记“还没有前驱”，通常把 `pre` 初始化为一个无效值，这里用 `-1`（只要确定不会是 BST 中合法值即可）。
+
+---
+
+### 递归中序遍历的写法
+
+代码逻辑非常简单：
+
+* 递归访问左子树
+* 用 pre 更新结果 ans
+* 更新 pre
+* 递归访问右子树
+
+这正是中序遍历对应的“左 → 根 → 右”顺序。
+
+---
+
+### 代码（C++）
+
+```cpp
+class Solution {
+public:
+    void dfs(TreeNode* root, int& pre, int& ans) {
+        if (root == nullptr) {
+            return;
+        }
+        dfs(root->left, pre, ans);
+        if (pre == -1) {
+            pre = root->val;   // 第一个点，只记录不比较
+        } else {
+            ans = min(ans, root->val - pre);
+            pre = root->val;   // 更新前驱
+        }
+        dfs(root->right, pre, ans);
+    }
+
+    int getMinimumDifference(TreeNode* root) {
+        int ans = INT_MAX, pre = -1;
+        dfs(root, pre, ans);
+        return ans;
+    }
+};
+```
+
+---
+
+### 复杂度分析
+
+**时间复杂度：O(n)**
+每个节点只访问一次。
+
+**空间复杂度：O(n)**
+取决于递归深度：
+
+* 如果树退化成链，则深度为 n；
+* 若树平衡，则深度为 log n；
+  最坏情况为 O(n)。
+
+---
+
