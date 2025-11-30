@@ -523,4 +523,191 @@ class Solution {
     }           
 };
 ```
+## 二叉搜索树
+二叉搜索树（Binary Search Tree，BST）是一种特殊的二叉树，其中每个节点的值都满足以下性质：
+左子树上所有节点的值都小于根节点的值。
+右子树上所有节点的值都大于根节点的值。
+这种性质使得二叉搜索树在查找、插入和删除操作上具有较高的效率，平均时间复杂度为 O(log n)，但在最坏情况下（例如插入有序数据）可能退化为链表，时间复杂度为 O(n)。
+### 查找
+在二叉搜索树中查找一个值，可以利用其有序性质。以下是查找操作的示例代码：
+```cpp
+class Solution {
+public:
+    bool searchBST(TreeNode* root, int val) {
+        if (root == nullptr) {
+            return false;
+        }
+        if (root->val == val) {
+            return true;
+        } else if (val < root->val) {
+            return searchBST(root->left, val);
+        } else {
+            return searchBST(root->right, val);
+        }
+    }
+};
+```
+### 插入
+在二叉搜索树中插入一个值，同样可以利用其有序性质。以下是插入操作的示例代码：
+```cpp
+class Solution {
+public:     
+    TreeNode* insertIntoBST(TreeNode* root, int val) {
+        if (root == nullptr) {
+            return new TreeNode(val);
+        }
+        if (val < root->val) {
+            root->left = insertIntoBST(root->left, val);
+        } else {
+            root->right = insertIntoBST(root->right, val);
+        }
+        return root;
+    }
+};
+```
+### 删除
+在二叉搜索树中删除一个值，需要考虑三种情况：删除的节点是叶子节点、删除的节点有一个子节点、删除的节点有两个子节点。以下是删除操作的示例代码：
+```cpp
+class Solution {
+public:     
+    TreeNode* deleteNode(TreeNode* root, int key) {
+        if (root == nullptr) {
+            return nullptr;
+        }
+        if (key < root->val) {
+            root->left = deleteNode(root->left, key);
+        } else if (key > root->val) {
+            root->right = deleteNode(root->right, key);
+        } else {
+            if (root->left == nullptr) {
+                return root->right;
+            } else if (root->right == nullptr) {
+                return root->left;
+            } else {
+                TreeNode* minNode = findMin(root->right);
+                root->val = minNode->val;
+                root->right = deleteNode(root->right, minNode->val);
+            }
+        }
+        return root;
+    }
 
+    TreeNode* findMin(TreeNode* node) {
+        while (node->left != nullptr) {
+            node = node->left;
+        }
+        return node;
+    }
+};
+```
+## 平衡二叉树
+平衡二叉树（Balanced Binary Tree）是一种特殊的二叉树，其中每个节点的左右子树高度差不超过 1。这种性质使得平衡二叉树在查找、插入和删除操作上具有较高的效率，平均时间复杂度为 O(log n)。
+### 判断是否为平衡二叉树
+
+判断一棵二叉树是否为平衡二叉树，可以通过递归计算每个节点的高度，并检查其左右子树的高度差是否超过 1。以下是判断操作的示例代码：
+```cpp
+class Solution {
+public:
+    bool isBalanced(TreeNode* root) {
+        return checkHeight(root) != -1;
+    }
+
+    int checkHeight(TreeNode* node) {
+        if (node == nullptr) {
+            return 0;
+        }
+        int leftHeight = checkHeight(node->left);
+        if (leftHeight == -1) {
+            return -1;
+        }
+        int rightHeight = checkHeight(node->right);
+        if (rightHeight == -1) {
+            return -1;
+        }
+        if (abs(leftHeight - rightHeight) > 1) {
+            return -1;
+        }
+        return max(leftHeight, rightHeight) + 1;
+    }
+};
+```
+复杂度分析
+时间复杂度：O(n)，其中 n 是二叉树的节点数。每个
+节点被访问一次。
+空间复杂度：O(h)，其中 h 是二叉树的高度。为递归 过程中栈的开销，平均情况下为 O(log n)，最坏情况下树呈现链状，为 O(n)。
+## 构建二叉树
+### 从前序和中序遍历构建二叉树
+根据二叉树的前序遍历和中序遍历结果，可以唯一确定一棵二叉树。前序遍历的第一个节点是根节点，在中序遍历中找到该节点的位置，左侧的节点构成左子树，右侧的节点构成右子树。然后递归地对左右子树进行同样的操作。
+以下是从前序和中序遍历构建二叉树的示例代码：
+```cpp
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {
+        return build(preorder, 0, preorder.size() - 1, inorder, 0, inorder.size() - 1);
+    }
+
+    TreeNode* build(vector<int>& preorder, int preStart, int preEnd,
+                    vector<int>& inorder, int inStart, int inEnd) {
+        if (preStart > preEnd || inStart > inEnd) {
+            return nullptr;
+        }
+
+        int rootVal = preorder[preStart];
+        TreeNode* root = new TreeNode(rootVal);
+
+        int inRootIndex = inStart;
+        while (inRootIndex <= inEnd && inorder[inRootIndex] != rootVal) {
+            inRootIndex++;
+        }
+        int leftTreeSize = inRootIndex - inStart;
+
+        root->left = build(preorder, preStart + 1, preStart + leftTreeSize,
+                           inorder, inStart, inRootIndex - 1);
+        root->right = build(preorder, preStart + leftTreeSize + 1, preEnd,
+                            inorder, inRootIndex + 1, inEnd);
+
+        return root;
+    }
+};
+```
+复杂度分析
+时间复杂度：O(n)，其中 n 是二叉树的节点数。每个节点被访问一次。
+空间复杂度：O(n)，为递归过程中栈的开销，平均情况下为 O(log n)，最坏情况下树呈现链状，为 O(n)。
+### 从中序和后序遍历构建二叉树
+根据二叉树的中序遍历和后序遍历结果，可以唯一确定一棵二叉树。后序遍历的最后一个节点是根节点，在中序遍历中找到该节点的位置，左侧的节点构成左子树，右侧的节点构成右子树。然后递归地对左右子树进行同样的操作。
+以下是从中序和后序遍历构建二叉树的示例代码：
+```cpp
+class Solution {
+public:
+    TreeNode* buildTree(vector<int>& inorder, vector<int>& postorder) {
+        return build(inorder, 0, inorder.size() - 1,
+                     postorder, 0, postorder.size() - 1);
+    }
+
+    TreeNode* build(vector<int>& inorder, int inStart, int inEnd,
+                    vector<int>& postorder, int postStart, int postEnd) {
+        if (inStart > inEnd || postStart > postEnd) {
+            return nullptr;
+        }
+
+        int rootVal = postorder[postEnd];
+        TreeNode* root = new TreeNode(rootVal);
+
+        int inRootIndex = inStart;
+        while (inRootIndex <= inEnd && inorder[inRootIndex] != rootVal) {
+            inRootIndex++;
+        }
+        int leftTreeSize = inRootIndex - inStart;
+
+        root->left = build(inorder, inStart, inRootIndex - 1,
+                           postorder, postStart, postStart + leftTreeSize - 1);
+        root->right = build(inorder, inRootIndex + 1, inEnd,
+                            postorder, postStart + leftTreeSize, postEnd - 1);
+
+        return root;
+    }
+};
+```
+复杂度分析
+时间复杂度：O(n)，其中 n 是二叉树的节点数。每个节点被访问一次。
+空间复杂度：O(n)，为递归过程中栈的开销，平均情况下为 O(log n)，最坏情况下树呈现链状，为 O(n)。
