@@ -446,3 +446,184 @@ public:
    可以有效避免重复。
 4. 组合问题用 `i+1` 控制每个数只能使用一次。
 5. 通过画搜索树，可以清楚看到为什么重复会出现、为什么去重能消灭重复。
+---
+## 3. 回文分割（LeetCode 131）
+
+本题要求：将字符串分割成若干子串，使得每个子串都是回文字符串，并返回所有可能的分割方案。
+[LeetCode 131. Palindrome Partitioning](https://leetcode.cn/problems/palindrome-partitioning/)
+要点包括：
+
+1. **回文判断要快速查询（使用 DP）**
+2. **回溯生成所有分割方案（使用划分型回溯框架）**
+3. **回文 DP 与回溯配合使用**
+
+---
+
+### 3.1 问题分析
+
+对任意字符串 `s`，我们需要找到所有可能的划分方式，使得每一段 `s[l:r]` 都是回文。
+
+例如：
+
+```
+输入：s = "aab"
+输出：
+[
+  ["a","a","b"],
+  ["aa","b"]
+]
+```
+
+由于回溯会频繁检查某个区间 `[i,j]` 是否为回文，如果每次都用双指针检查，开销会非常大。
+
+所以引入 **DP 预处理**，提前得出：
+
+```
+isPalindrome[i][j] = s[i..j] 是否为回文
+```
+
+之后回溯时可以 O(1) 查表，提高效率。
+
+---
+
+### 3.2 回文判断 DP
+
+#### DP 数组定义
+
+```
+isPalindrome[i][j] = (s[i..j] 是不是回文)
+```
+
+#### DP 递推公式
+
+```
+当 i == j 时：单字符 → 必是回文
+
+当 j - i == 1 时：两个字符 → s[i] == s[j]
+
+当 j - i >= 2 时：
+    s[i] == s[j] 且 isPalindrome[i+1][j-1] 为真
+```
+
+因此转移方程为：
+
+```
+if (j == i)  isPalindrome[i][j] = true
+else if (j - i == 1) isPalindrome[i][j] = (s[i] == s[j])
+else isPalindrome[i][j] = (s[i] == s[j] && isPalindrome[i+1][j-1])
+```
+
+#### 遍历顺序
+
+因为 `isPalindrome[i][j]` 依赖 `isPalindrome[i+1][j-1]`，所以必须：
+
+* **i 从后往前 ↓**
+* **j 从 i 往后 →**
+
+完整代码：
+
+```cpp
+void computePalindrome(const string& s) {
+    isPalindrome.resize(s.size(), vector<bool>(s.size(), false));
+    for (int i = s.size() - 1; i >= 0; i--) {
+        for (int j = i; j < s.size(); j++) {
+            if (j == i) 
+                isPalindrome[i][j] = true;
+            else if (j - i == 1) 
+                isPalindrome[i][j] = (s[i] == s[j]);
+            else 
+                isPalindrome[i][j] = (s[i] == s[j] && isPalindrome[i+1][j-1]);
+        }
+    }
+}
+```
+
+DP 完成后，我们可以 O(1) 判断任何区间是否为回文。
+
+---
+
+### 3.3 回溯划分子串
+
+#### 回溯函数定义
+
+```
+startIndex 指向当前需要分割的位置
+path 保存当前分割方案
+result 保存所有方案
+```
+
+框架为：
+
+```
+如果 startIndex 走到末尾 → 得到一个有效方案
+否则枚举区间 [startIndex, i]
+    若是回文 → 加入 path → 递归 → 回溯弹出
+```
+
+关键点：
+**只有当 isPalindrome[startIndex][i] 为真时才尝试分割。**
+
+完整回溯代码：
+
+```cpp
+void backtracking(const string& s, int startIndex) {
+    if (startIndex >= s.size()) {
+        result.push_back(path);
+        return;
+    }
+
+    for (int i = startIndex; i < s.size(); i++) {
+
+        // 若不是回文，跳过当前 i
+        if (!isPalindrome[startIndex][i]) {
+            continue;
+        }
+
+        // 是回文，尝试加入
+        string sub = s.substr(startIndex, i - startIndex + 1);
+        path.push_back(sub);
+
+        // 递归处理剩余部分
+        backtracking(s, i + 1);
+
+        // 回溯
+        path.pop_back();
+    }
+}
+```
+
+这里 `continue` 只跳过 **非回文路径** 的 push / 递归 / pop，
+但 **回文路径一定会执行 push → 递归 → pop**，保证回溯完整性。
+
+---
+
+### 3.4 主函数整合
+
+```cpp
+vector<vector<string>> partition(string s) {
+    result.clear();
+    path.clear();
+    computePalindrome(s);
+    backtracking(s, 0);
+    return result;
+}
+```
+
+---
+
+### 3.5 时间复杂度分析
+
+* **回文 DP 预处理：O(n²)**
+* **回溯枚举所有方案：最坏 O(n·2ⁿ)**
+  因为每个位置都可以选择切或不切
+* 总体上性能足够应对题目限制（n ≤ 16）
+
+---
+
+### 3.6 总结
+
+1. 通过 DP 预处理所有 `[i,j]` 回文区间，回溯时能 O(1) 判断。
+2. 回溯负责枚举所有可能的切分方式。
+3. DP + 回溯是本题的标准高效组合。
+
+---
