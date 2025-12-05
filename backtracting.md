@@ -938,3 +938,213 @@ for(i = seg1_end)
 两者在本题中性能几乎一致，只是写法风格不同。
 
 ---
+
+## 5. 回溯问题的剪枝技巧总览（排列 / 组合 / 子集）
+
+回溯（Backtracking）在排列、组合、子集等经典问题中大量使用。
+剪枝（pruning）技巧是提升算法速度、减少冗余搜索的核心。
+
+
+### 5.1 组合问题的剪枝：限制剩余可选数量
+
+#### 📌 原始题目（无重复）
+[77. 组合（Combinations）](https://leetcode.cn/problems/combinations/)
+
+#### 📌 剪枝思想
+
+组合需要选 k 个数，如果剩余数字不够填满剩余位置，继续搜索是无意义的，因此可以提前终止循环。
+
+核心剪枝：
+
+```cpp
+for (int i = start; i <= n - (k - path.size()) + 1; i++)
+```
+
+#### ✦ 代码节选（剪枝位置）
+
+```cpp
+void backtracking(int n, int k, int start) {
+    if (path.size() == k) {
+        ans.push_back(path);
+        return;
+    }
+    for (int i = start; i <= n - (k - path.size()) + 1; i++) { // 剪枝
+        path.push_back(i);
+        backtracking(n, k, i + 1);
+        path.pop_back();
+    }
+}
+```
+
+**效果：** 有效收缩搜索树宽度。
+
+---
+
+### 5.2 子集问题的剪枝：跳过同层重复分支
+
+#### 📌 原始题目（无重复）
+[78. 子集（Subsets）](https://leetcode.cn/problems/subsets/)
+
+#### 📌 含重复数字的题目（必须剪枝）
+[90. 子集 II（Subsets II）](https://leetcode.cn/problems/subsets-ii/)
+
+#### 📌 剪枝原则
+
+对于重复数字，**在同一层中只能选择第一个重复元素**，否则会产生重复子集。
+
+剪枝语句：
+
+```cpp
+if (i > start && nums[i] == nums[i - 1]) continue;
+```
+
+#### ✦ 代码节选
+
+```cpp
+sort(nums.begin(), nums.end());
+for (int i = start; i < nums.size(); i++) {
+    if (i > start && nums[i] == nums[i - 1]) continue; // 同层去重剪枝
+    temp.push_back(nums[i]);
+    dfs(nums, i + 1);
+    temp.pop_back();
+}
+```
+
+**效果：** 避免重复集合，例如 `[1,2]`、`[1,2]`。
+
+---
+
+### 5.3 排列问题的剪枝：visited 与去重策略
+#### 5.3.1 无重复数字的排列（无需特殊剪枝）
+##### 📌 原始题目
+
+
+[46. 全排列（Permutations）](https://leetcode.cn/problems/permutations/)
+
+剪枝很简单，只需使用 `vis[]` 避免选择重复位置：
+
+```cpp
+if (vis[i]) continue;
+```
+
+这是纯排列，不涉及重复数字。
+
+---
+
+#### 5.3.2 含重复数字的排列（必须剪枝）
+
+#### 📌 题目链接
+[47. 全排列 II（Permutations II）](https://leetcode.cn/problems/permutations-ii/)
+
+这是整个回溯体系中**最经典的剪枝**。
+
+核心语句：
+
+```cpp
+if (vis[i] || (i > 0 && nums[i] == nums[i - 1] && !vis[i - 1])) {
+    continue;
+}
+```
+
+#### 📌 剪枝解释（关键）
+
+##### ① `vis[i] == true`
+
+该数字已经在当前排列中使用，不能重复使用。
+
+##### ② `nums[i] == nums[i-1] && !vis[i-1]`
+
+重复数字的使用顺序必须稳定：
+
+* 如果当前数字和前一个数字一样
+* 并且前一个数字还没被使用
+  → 说明本层尝试用后一个重复数字，会导致重复排列
+
+因此跳过。
+
+#### ✦ 代码节选
+
+```cpp
+sort(nums.begin(), nums.end());
+for (int i = 0; i < nums.size(); i++) {
+    if (vis[i] || (i > 0 && nums[i] == nums[i-1] && !vis[i-1])) continue; // 剪枝
+    vis[i] = true;
+    perm.push_back(nums[i]);
+    backtrack(nums, ans, idx + 1, perm);
+    vis[i] = false;
+    perm.pop_back();
+}
+```
+
+**效果：** 避免多次生成 `[1,1,2]`, `[1,1,2]` 等重复排列。
+
+---
+
+### 5.4 swap 全排列的剪枝（用于消除重复交换）
+
+#### 📌 题目（仍为排列 II）
+[47. 全排列 II（Permutations II）](https://leetcode.cn/problems/permutations-ii/)
+
+若使用 swap 法，需要额外剪枝：
+
+```cpp
+if (i > first && nums[i] == nums[first]) continue;
+```
+
+#### 📌 剪枝解释
+
+对位置 `first` 来说：
+
+* 若某个值已经被放置过一次
+* 再次放置同样的值，会产生重复分支
+
+因此同层出现重复值时，只能在第一次出现时使用。
+
+#### ✦ 代码节选
+
+```cpp
+sort(nums.begin(), nums.end());
+void dfs(int first) {
+    if (first == nums.size()) {
+        ans.push_back(nums);
+        return;
+    }
+    for (int i = first; i < nums.size(); i++) {
+        if (i > first && nums[i] == nums[first]) continue; // 剪枝
+        swap(nums[i], nums[first]);
+        dfs(first + 1);
+        swap(nums[i], nums[first]);
+    }
+}
+```
+
+---
+
+### 5.5 剪枝策略总结表
+
+| 问题类型     | 原题 | 含重复需剪枝题目 | 剪枝逻辑        |
+| -------- | -- | -------- | ----------- |
+| 组合       | 77 | ——       | 限制剩余可选数量    |
+| 子集       | 78 | 90       | 同层去重        |
+| 排列（无重复）  | 46 | ——       | 仅使用 visited |
+| 排列（含重复）  | —— | 47       | 稳定顺序剪枝（核心）  |
+| swap 全排列 | 46 | 47       | 同层重复剪枝      |
+
+---
+
+### 5.6 这些剪枝的统一思想
+
+所有剪枝都基于一个统一原则：
+
+> **重复数字在同一层不能被重复使用。**
+
+区别在于：
+
+* 组合/子集剪枝：本层重复元素不能重复出现
+* 排列剪枝（官方公式）：重复数字必须按顺序使用
+* swap 法剪枝：同层放置重复元素会造成重复分支
+
+本质上都是对**搜索树结构的约束**。
+
+---
+
